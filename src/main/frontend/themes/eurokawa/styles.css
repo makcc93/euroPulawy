@@ -1,0 +1,9 @@
+@import url('./main-layout.css');
+@import url('./views/ludzie-view.css');
+@import url('./views/zakupy-view.css');
+@import url('./views/checkout-form-view.css');
+
+.custom-header-style {
+    font-size: 12px; /* Rozmiar tekstu */
+    font-weight: bold; /* Grubość tekstu */
+}
