@@ -1,0 +1,31 @@
+# Java build
+/target/
+*.class
+
+# Maven
+log/
+logs/
+*.log
+*.tmp
+*.bak
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Properties
+application.properties
+
+# Private
+*.key
+*.pem
