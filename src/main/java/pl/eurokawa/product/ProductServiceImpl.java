@@ -1,8 +1,10 @@
 package pl.eurokawa.product;
 
+import com.vaadin.flow.router.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -14,7 +16,8 @@ public class ProductServiceImpl implements ProductService{
 
     @Override
     public List<Product> getAllProducts() {
-        return productRepository.findAllProducts();
+        return Optional.ofNullable(productRepository.findAllProducts())
+                .orElseThrow(() -> new NotFoundException("Cannot find any products!"));
     }
 
     @Override

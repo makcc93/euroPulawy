@@ -19,8 +19,7 @@ import pl.eurokawa.product.Product;
 import pl.eurokawa.product.ProductService;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.token.Token;
-import pl.eurokawa.token.TokenRepository;
-import pl.eurokawa.token.TokenServiceImpl;
+import pl.eurokawa.token.TokenService;
 import pl.eurokawa.token.TokenType;
 import pl.eurokawa.user.User;
 import pl.eurokawa.views.layouts.LayoutForDialog;
@@ -31,35 +30,33 @@ public class ProductManagerViewSOLID extends Div {
     private static final Logger log = LoggerFactory.getLogger(ProductManagerViewSOLID.class);
     private final Grid<Product> grid = new Grid<>(Product.class,false);
     private final ListDataProvider<Product> dataProvider;
-    private final TokenServiceImpl tokenServiceImpl;
     private final SecurityService securityService;
     private final EmailService emailService;
-    private final TokenRepository tokenRepository;
     private final ProductService productService;
+    private final TokenService tokenService;
 
-    public ProductManagerViewSOLID(TokenServiceImpl tokenServiceImpl, SecurityService securityService, EmailService emailService, TokenRepository tokenRepository, ProductService productService){
-        this.tokenServiceImpl = tokenServiceImpl;
+    public ProductManagerViewSOLID(SecurityService securityService, EmailService emailService, ProductService productService, TokenService tokenService){
         this.securityService = securityService;
         this.emailService = emailService;
-        this.tokenRepository = tokenRepository;
         this.productService = productService;
 
         dataProvider = new ListDataProvider<>(productService.getAllProducts());
+        this.tokenService = tokenService;
         grid.setDataProvider(dataProvider);
         grid.setAllRowsVisible(true);
 
-        createGridColumns(grid,productService);
+        createGridColumns(grid);
 
         Button addProductButton = new Button();
         addProductButton.setIcon(VaadinIcon.PLUS_SQUARE_O.create());
         addProductButton.addThemeVariants(ButtonVariant.LUMO_LARGE);
         addProductButton.setTooltipText("Dodaj nowy produkt");
-        addNewProductDialog(addProductButton,grid,productService);
+        addNewProductDialog(addProductButton,grid);
 
         add(grid,addProductButton);
     }
 
-    private void addNewProductDialog(Button addProductButton, Grid<Product> grid,ProductService productService) {
+    private void addNewProductDialog(Button addProductButton, Grid<Product> grid) {
         addProductButton.addClickListener(clickEvent ->{
             Dialog dialog = new Dialog();
             LayoutForDialog layoutForDialog = new LayoutForDialog("DODAWANIE NOWEGO PRODUKTU", "Wprowadź nazwę nowego produktu");
@@ -90,13 +87,13 @@ public class ProductManagerViewSOLID extends Div {
         refreshGrid(grid,productService);
     }
 
-    private void createGridColumns(Grid<Product> grid,ProductService productService) {
+    private void createGridColumns(Grid<Product> grid) {
         createProductIdColumn(grid);
         createProductNameColumn(grid);
-        createActionColumn(grid,productService);
+        createActionColumn(grid);
     }
 
-    private void createActionColumn(Grid<Product> grid,ProductService productService) {
+    private void createActionColumn(Grid<Product> grid) {
         grid.addColumn(new ComponentRenderer<>(product -> {
             Button edit = new Button();
             edit.setIcon(VaadinIcon.TOOLS.create());
@@ -128,8 +125,7 @@ public class ProductManagerViewSOLID extends Div {
             delete.addClickListener(deleteClick ->{
                 User user = securityService.getLoggedUser();
 
-                Token token = tokenServiceImpl.generateToken(user, TokenType.SIX_NUMBERS);
-                tokenRepository.save(token);
+                Token token = tokenService.generateToken(user, TokenType.DELETE);
                 emailService.sendSixNumbersCode(user.getEmail(),token.getValue());
 
                 Dialog dialog = new Dialog();
