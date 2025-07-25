@@ -14,12 +14,12 @@ import jakarta.annotation.security.RolesAllowed;
 import pl.eurokawa.balance.Balance;
 import pl.eurokawa.balance.BalanceBroadcaster;
 import pl.eurokawa.balance.BalanceRepository;
-import pl.eurokawa.balance.BalanceService;
+import pl.eurokawa.balance.BalanceServiceImpl;
 import pl.eurokawa.email.EmailService;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.token.Token;
 import pl.eurokawa.token.TokenRepository;
-import pl.eurokawa.token.TokenService;
+import pl.eurokawa.token.TokenServiceImpl;
 import pl.eurokawa.token.TokenType;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
@@ -31,18 +31,16 @@ import java.math.BigDecimal;
 @Route("manual-balance-setter")
 public class BalanceManualSetterView extends Div {
     private final BalanceRepository balanceRepository;
-    private final BalanceService balanceService;
+    private final BalanceServiceImpl balanceServiceImpl;
     private final SecurityService securityService;
-    private final TokenService tokenService;
     private final EmailService emailService;
-    private final TokenRepository tokenRepository;
     private TextField newBalance;
 
-    public BalanceManualSetterView(BalanceRepository balanceRepository, BalanceService balanceService, SecurityService securityService, TokenService tokenService, EmailService emailService, TokenRepository tokenRepository){
+    public BalanceManualSetterView(BalanceRepository balanceRepository, BalanceServiceImpl balanceServiceImpl, SecurityService securityService, TokenServiceImpl tokenServiceImpl, EmailService emailService, TokenRepository tokenRepository){
         this.balanceRepository = balanceRepository;
-        this.balanceService = balanceService;
+        this.balanceServiceImpl = balanceServiceImpl;
         this.securityService = securityService;
-        this.tokenService = tokenService;
+        this.tokenServiceImpl = tokenServiceImpl;
         this.emailService = emailService;
         this.tokenRepository = tokenRepository;
 
@@ -101,7 +99,7 @@ public class BalanceManualSetterView extends Div {
             dialogWindow.add(layoutForDialog);
 
             User loggedUser = securityService.getLoggedUser();
-            Token token = tokenService.generateToken(loggedUser, TokenType.SIX_NUMBERS);
+            Token token = tokenServiceImpl.generateToken(loggedUser, TokenType.SIX_NUMBERS);
             tokenRepository.save(token);
             emailService.sendSixNumbersCode(loggedUser.getEmail(),token.getValue());
 
@@ -113,9 +111,9 @@ public class BalanceManualSetterView extends Div {
 
                     newBalance.setValue(changedBalance.toString());
 
-                    balanceService.updateBalance(loggedUser,newValue, TransactionType.MANUAL);
+                    balanceServiceImpl.updateBalance(loggedUser,newValue, TransactionType.MANUAL);
 
-                    BalanceBroadcaster.broadcast(balanceService.getCurrentBalance());
+                    BalanceBroadcaster.broadcast(balanceServiceImpl.getCurrentBalance());
 
                     Notification.show("Nowa wartość ustawiona poprawnie",5000, Notification.Position.BOTTOM_CENTER);
                     dialogWindow.close();

@@ -15,7 +15,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.balance.BalanceBroadcaster;
-import pl.eurokawa.balance.BalanceService;
+import pl.eurokawa.balance.BalanceServiceImpl;
 import pl.eurokawa.other.DateFormatter;
 import pl.eurokawa.purchase.Purchase;
 import pl.eurokawa.purchase.PurchaseRepository;
@@ -35,7 +35,7 @@ import java.util.List;
 public class PurchaseConfirmationView extends Div {
 
     private final PurchaseService purchaseService;
-    private final BalanceService balanceService;
+    private final BalanceServiceImpl balanceServiceImpl;
     private final PurchaseRepository purchaseRepository;
     private final TransactionRepository transactionRepository;
     private final S3Service s3Service;
@@ -43,9 +43,9 @@ public class PurchaseConfirmationView extends Div {
     private final ListDataProvider<Purchase> dataProvider;
     private final DateFormatter dateFormatter;
 
-    public PurchaseConfirmationView(PurchaseService purchaseService, BalanceService balanceService, PurchaseRepository purchaseRepository, TransactionRepository transactionRepository, S3Service s3Service, DateFormatter dateFormatter) {
+    public PurchaseConfirmationView(PurchaseService purchaseService, BalanceServiceImpl balanceServiceImpl, PurchaseRepository purchaseRepository, TransactionRepository transactionRepository, S3Service s3Service, DateFormatter dateFormatter) {
         this.purchaseService = purchaseService;
-        this.balanceService = balanceService;
+        this.balanceServiceImpl = balanceServiceImpl;
         this.purchaseRepository = purchaseRepository;
         this.transactionRepository = transactionRepository;
         this.purchases = purchaseService.getSavedNotConfirmedPurchases();
@@ -93,9 +93,9 @@ public class PurchaseConfirmationView extends Div {
 
                 transactionRepository.save(transaction);
 
-                balanceService.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
+                balanceServiceImpl.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
 
-                BalanceBroadcaster.broadcast(balanceService.getCurrentBalance());
+                BalanceBroadcaster.broadcast(balanceServiceImpl.getCurrentBalance());
 
                 purchases.remove(purchase);
                 dataProvider.refreshAll();

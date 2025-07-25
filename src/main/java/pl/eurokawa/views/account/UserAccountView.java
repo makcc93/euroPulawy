@@ -20,13 +20,10 @@ import com.vaadin.flow.router.Route;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
-import pl.eurokawa.token.Token;
-import pl.eurokawa.token.TokenRepository;
-import pl.eurokawa.token.TokenType;
+import pl.eurokawa.token.*;
 import pl.eurokawa.user.User;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.email.EmailService;
-import pl.eurokawa.token.TokenService;
 import pl.eurokawa.user.UserService;
 import pl.eurokawa.views.HomeView;
 import pl.eurokawa.views.layouts.MainLayout;
@@ -45,15 +42,15 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
     private final BeanValidationBinder<User> binder;
     private final EmailService emailService;
     private final TokenService tokenService;
-    private final TokenRepository tokenRepository;
 
-    public UserAccountView(UserService userService, SecurityService securityService, EmailService emailService, TokenService tokenService, TokenRepository tokenRepository) {
+
+    public UserAccountView(UserService userService, SecurityService securityService, EmailService emailService, TokenService tokenService) {
         this.userService = userService;
         this.securityService = securityService;
         loggedUser = securityService.getLoggedUser();
         this.emailService = emailService;
         this.tokenService = tokenService;
-        this.tokenRepository = tokenRepository;
+
 
         binder = new BeanValidationBinder<>(User.class);
 
@@ -175,13 +172,12 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
 
                     emailService.sendSixNumbersCode(user.getEmail(), token.getValue());
                     Notification.show("Kod autoryzacji wysłano na emaila " + user.getEmail(),3000, Notification.Position.BOTTOM_CENTER);
-                    tokenRepository.save(token);
 
                     Dialog tokenDialog = new Dialog();
                     LayoutForDialog layoutForDialog = new LayoutForDialog("Wpisz KOD otrzymany na emaila");
 
                     layoutForDialog.getSaveButton().addClickListener(confirmEvent -> {
-                        String tokenInUserEmail = tokenRepository.findFirstByUserIdOrderByIdDesc(user.getId()).getValue();
+                        String tokenInUserEmail = tokenService.getLastUserTokenByType(user.getId(),TokenType.PASSWORD_RESET).getValue();
                         String userTokenInputValue = layoutForDialog.getTextField().getValue();
 
                         if (tokenInUserEmail.equals(userTokenInputValue)){
@@ -200,7 +196,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
 
                     layoutForDialog.getCancelButton().addClickListener(cancelEvent -> {
                         tokenDialog.close();
-                        tokenRepository.delete(token);
+                        tokenService.delete(token);
                     });
 
                     tokenDialog.add(layoutForDialog);
@@ -243,7 +239,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
         TextField tokenInput = new TextField("KOD");
 
         tokenConfirmButton.addClickListener(confirm ->{
-            Token tokenInUserEmail = tokenRepository.findFirstByUserIdOrderByIdDesc(user.getId());
+            Token tokenInUserEmail = tokenService.getLastUserTokenByType(user.getId(),TokenType.PASSWORD_RESET);
 
             if (tokenInput.getValue().equals(tokenInUserEmail.getValue())){
                 userService.setUserNewPassword(user.getEmail(), password);

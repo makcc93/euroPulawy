@@ -27,10 +27,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.purchase.PurchaseRepository;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.email.EmailService;
-import pl.eurokawa.token.Token;
-import pl.eurokawa.token.TokenRepository;
-import pl.eurokawa.token.TokenService;
-import pl.eurokawa.token.TokenType;
+import pl.eurokawa.token.*;
 import pl.eurokawa.transaction.TransactionRepository;
 import pl.eurokawa.user.UserRepository;
 import pl.eurokawa.user.UserService;
@@ -49,7 +46,6 @@ public class UserView extends Div implements BeforeEnterObserver {
 
     private final SecurityService securityService;
     private final TokenService tokenService;
-    private final TokenRepository tokenRepository;
     private final EmailService emailService;
     private static final Logger logger = LogManager.getLogger(UserView.class);
 
@@ -75,10 +71,9 @@ public class UserView extends Div implements BeforeEnterObserver {
     private final PurchaseRepository purchaseRepository;
     private final UserRepository userRepository;
 
-    public UserView(SecurityService securityService, TokenService tokenService, TokenRepository tokenRepository, EmailService emailService, UserService userService, TransactionRepository transactionRepository, PurchaseRepository purchaseRepository, UserRepository userRepository) {
+    public UserView(SecurityService securityService, TokenService tokenService, EmailService emailService, UserService userService, TransactionRepository transactionRepository, PurchaseRepository purchaseRepository, UserRepository userRepository) {
         this.securityService = securityService;
         this.tokenService = tokenService;
-        this.tokenRepository = tokenRepository;
         this.emailService = emailService;
         this.userService = userService;
         this.transactionRepository = transactionRepository;
@@ -245,7 +240,6 @@ public class UserView extends Div implements BeforeEnterObserver {
         Button emailSender = new Button("Wyślij ponownie link aktywacyjny",event ->{
             if (!userService.getUserByEmail(email.getValue()).orElseThrow().getEmailConfirmed()) {
                 Token token = tokenService.generateToken(userRepository.findUserByEmail(email.getValue()).orElseThrow(), TokenType.REGISTRATION);
-                tokenRepository.save(token);
                 emailService.sendEmailConfirmationLink(email.getValue(), token.getValue());
 
                 Notification.show("Wysłano link potwierdzający e-mail dla " + firstName.getValue() + " " + lastName.getValue(), 5000, Position.BOTTOM_CENTER);

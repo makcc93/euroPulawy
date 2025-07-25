@@ -19,13 +19,14 @@ public class Product extends AbstractEntity {
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Purchase> purchases = new ArrayList<>();
 
-    @Transient
-    Product selectedProduct;
-
     public Product(){}
+//
+//    public Product(int id){
+//        this.id = id;
+//    }
 
-    public Product(int id){
-        this.id = id;
+    public Product(String name){
+        this.name = name;
     }
 
     @Override
@@ -58,11 +59,4 @@ public class Product extends AbstractEntity {
         return name;
     }
 
-    public Product getSelectedProduct() {
-        return selectedProduct;
-    }
-
-    public void setSelectedProduct(Product selectedProduct) {
-        this.selectedProduct = selectedProduct;
-    }
 }

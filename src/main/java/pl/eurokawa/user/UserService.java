@@ -21,7 +21,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User registerUser(String firstName,String lastName,String email, String password){ //String role
+    public User registerUser(String firstName,String lastName,String email, String password){
         String securedPassword = passwordEncoder.encode(password);
 
         User user = new User(firstName,lastName,email,securedPassword);

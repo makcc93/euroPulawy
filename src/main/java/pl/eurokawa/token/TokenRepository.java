@@ -10,11 +10,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TokenRepository extends JpaRepository<Token,Long>, JpaSpecificationExecutor<Token> {
 
-    Token findFirstByUserIdOrderByIdDesc(Integer userId);
-
-    @Query("SELECT t FROM Token t WHERE t.user.id = :userId AND t.type = 'REGISTRATION' ORDER BY t.id DESC LIMIT 1")
-    Token findUserLastRegistrationToken(@Param("userId") Integer userId);
-
-    @Query("SELECT t FROM Token t WHERE t.user.id = :userId AND t.type = 'ACCOUNT_CONFIRMATION' ORDER BY t.id DESC LIMIT 1")
-    Token findUserLastAccountConfirmationToken(@Param("userId") Integer userId);
+    @Query("SELECT t FROM Token t WHERE t.user.id = :userId AND t.type = :tokenType ORDER BY t.id DESC LIMIT 1")
+    Token findLastUserTokenByTokenType(@Param("userId") Integer userId,@Param("tokenType") TokenType tokenType);
 }

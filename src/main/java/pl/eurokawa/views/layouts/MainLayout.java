@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import pl.eurokawa.balance.BalanceBroadcaster;
-import pl.eurokawa.balance.BalanceService;
+import pl.eurokawa.balance.BalanceServiceImpl;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.user.UserType;
 import pl.eurokawa.views.HomeView;
@@ -55,17 +55,17 @@ public class MainLayout extends AppLayout {
     private TextField balanceField;
     private final SecurityService securityService;
     private Button loggedUserButton;
-    private final BalanceService balanceService;
+    private final BalanceServiceImpl balanceServiceImpl;
     private H1 viewTitle;
 
     @Autowired
-    public MainLayout(BalanceService balanceService, SecurityService securityService) {
+    public MainLayout(BalanceServiceImpl balanceServiceImpl, SecurityService securityService) {
         try {
-            this.balanceService = balanceService;
+            this.balanceServiceImpl = balanceServiceImpl;
             this.securityService = securityService;
             this.viewTitle = new H1();
 
-            init(balanceService, securityService);
+            init(balanceServiceImpl, securityService);
         }
         catch (Exception e){
             e.printStackTrace();
@@ -73,10 +73,10 @@ public class MainLayout extends AppLayout {
         }
     }
 
-    private void init(BalanceService balanceService, SecurityService securityService) {
+    private void init(BalanceServiceImpl balanceServiceImpl, SecurityService securityService) {
         try {
             setPrimarySection(Section.DRAWER);
-            addDrawerContent(balanceService, securityService);
+            addDrawerContent(balanceServiceImpl, securityService);
             addHeaderContent();
         }
         catch (Exception e){
@@ -95,8 +95,8 @@ public class MainLayout extends AppLayout {
         addToNavbar(true, toggle, viewTitle);
     }
 
-    private void addDrawerContent(BalanceService balanceService, SecurityService securityService) {
-        if (balanceService == null || securityService == null){
+    private void addDrawerContent(BalanceServiceImpl balanceServiceImpl, SecurityService securityService) {
+        if (balanceServiceImpl == null || securityService == null){
             log.error("blaaaaaaaaaaaaad wewnatrz addDrawer, cos jest nullem");
         }
         BalanceBroadcaster.register(this::updateBalance);
@@ -141,10 +141,10 @@ public class MainLayout extends AppLayout {
         balanceField.setReadOnly(true);
         balanceField.getElement().getStyle().set("transition", "opacity 0.5s ease-in-out");
 
-        balanceField.setValue(String.valueOf(balanceService.getCurrentBalance()));
+        balanceField.setValue(String.valueOf(balanceServiceImpl.getCurrentBalance()));
 
         balanceField.addValueChangeListener(event ->{
-            if (!balanceField.getValue().equals(String.valueOf(balanceService.getCurrentBalance()))){
+            if (!balanceField.getValue().equals(String.valueOf(balanceServiceImpl.getCurrentBalance()))){
                 BalanceBroadcaster.register(this::updateBalance);
             }
         });

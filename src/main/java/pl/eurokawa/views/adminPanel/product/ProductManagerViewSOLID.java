@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.eurokawa.email.EmailService;
 import pl.eurokawa.product.Product;
-import pl.eurokawa.product.ProductRepository;
+import pl.eurokawa.product.ProductService;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.token.Token;
 import pl.eurokawa.token.TokenRepository;
@@ -25,41 +25,41 @@ import pl.eurokawa.token.TokenType;
 import pl.eurokawa.user.User;
 import pl.eurokawa.views.layouts.LayoutForDialog;
 
-@Route("product-manager")
+@Route("product-manager-solid")
 @RolesAllowed("ADMIN")
-public class ProductManagerView extends Div {
-
-    private static final Logger log = LoggerFactory.getLogger(ProductManagerView.class);
-    private final Grid<Product> grid;
+public class ProductManagerViewSOLID extends Div {
+    private static final Logger log = LoggerFactory.getLogger(ProductManagerViewSOLID.class);
+    private final Grid<Product> grid = new Grid<>(Product.class,false);
     private final ListDataProvider<Product> dataProvider;
     private final TokenServiceImpl tokenServiceImpl;
     private final SecurityService securityService;
     private final EmailService emailService;
     private final TokenRepository tokenRepository;
+    private final ProductService productService;
 
-    public ProductManagerView(ProductRepository productRepository, TokenServiceImpl tokenServiceImpl, SecurityService securityService, EmailService emailService, TokenRepository tokenRepository){
+    public ProductManagerViewSOLID(TokenServiceImpl tokenServiceImpl, SecurityService securityService, EmailService emailService, TokenRepository tokenRepository, ProductService productService){
         this.tokenServiceImpl = tokenServiceImpl;
         this.securityService = securityService;
         this.emailService = emailService;
         this.tokenRepository = tokenRepository;
+        this.productService = productService;
 
-        dataProvider = new ListDataProvider<>(productRepository.findAllProducts());
-        grid = new Grid<>(Product.class,false);
+        dataProvider = new ListDataProvider<>(productService.getAllProducts());
         grid.setDataProvider(dataProvider);
         grid.setAllRowsVisible(true);
 
-        createGridColumns(grid,productRepository);
+        createGridColumns(grid,productService);
 
         Button addProductButton = new Button();
         addProductButton.setIcon(VaadinIcon.PLUS_SQUARE_O.create());
         addProductButton.addThemeVariants(ButtonVariant.LUMO_LARGE);
         addProductButton.setTooltipText("Dodaj nowy produkt");
-        addNewProductDialog(addProductButton,grid,productRepository);
+        addNewProductDialog(addProductButton,grid,productService);
 
         add(grid,addProductButton);
     }
 
-    private void addNewProductDialog(Button addProductButton, Grid<Product> grid,ProductRepository productRepository) {
+    private void addNewProductDialog(Button addProductButton, Grid<Product> grid,ProductService productService) {
         addProductButton.addClickListener(clickEvent ->{
             Dialog dialog = new Dialog();
             LayoutForDialog layoutForDialog = new LayoutForDialog("DODAWANIE NOWEGO PRODUKTU", "Wprowadź nazwę nowego produktu");
@@ -69,18 +69,15 @@ public class ProductManagerView extends Div {
                 String userInputValue = layoutForDialog.getTextField().getValue();
 
                 if (userInputValue != null) {
-                    Product product = new Product();
-                    product.setName(userInputValue.strip());
-
-                    productRepository.save(product);
-                    Notification.show("Produkt: " + product.getName().strip() + " został poprawnie dodany", 5000, Notification.Position.MIDDLE);
+                    productService.create(userInputValue);
+                    Notification.show("Produkt: " + userInputValue + " został poprawnie dodany", 5000, Notification.Position.MIDDLE);
                     dialog.close();
                 }
                 else {
                     Notification.show("Wprowadź nazwę dodawanego produktu",5000, Notification.Position.MIDDLE);
                 }
 
-                refreshGrid(grid,productRepository);
+                refreshGrid(grid,productService);
             });
 
             layoutForDialog.getCancelButton().addClickListener(cancelEvent ->{
@@ -90,16 +87,16 @@ public class ProductManagerView extends Div {
             dialog.open();
 
         });
-        refreshGrid(grid,productRepository);
+        refreshGrid(grid,productService);
     }
 
-    private void createGridColumns(Grid<Product> grid,ProductRepository productRepository) {
+    private void createGridColumns(Grid<Product> grid,ProductService productService) {
         createProductIdColumn(grid);
         createProductNameColumn(grid);
-        createActionColumn(grid,productRepository);
+        createActionColumn(grid,productService);
     }
 
-    private void createActionColumn(Grid<Product> grid,ProductRepository productRepository) {
+    private void createActionColumn(Grid<Product> grid,ProductService productService) {
         grid.addColumn(new ComponentRenderer<>(product -> {
             Button edit = new Button();
             edit.setIcon(VaadinIcon.TOOLS.create());
@@ -112,11 +109,11 @@ public class ProductManagerView extends Div {
 
                 layoutForDialog.getSaveButton().addClickListener(saveClick ->{
                     product.setName(layoutForDialog.getTextField().getValue());
-                    productRepository.save(product);
+                    productService.save(product);
 
                     Notification.show("Poprawnie zmieniono nazwę produktu",5000, Notification.Position.MIDDLE);
                     dialog.close();
-                    refreshGrid(grid,productRepository);
+                    refreshGrid(grid,productService);
                 });
 
                 layoutForDialog.getCancelButton().addClickListener(cancelClick -> {
@@ -124,7 +121,6 @@ public class ProductManagerView extends Div {
                 });
 
                 dialog.open();
-                refreshGrid(grid,productRepository); //try to delete this
             });
 
             Button delete = new Button();
@@ -142,7 +138,7 @@ public class ProductManagerView extends Div {
 
                 layoutForDialog.getSaveButton().addClickListener(saveClick ->{
                     if (layoutForDialog.getTextField().getValue().equals(token.getValue())){
-                        productRepository.delete(product);
+                        productService.delete(product);
 
                         Notification.show("Produkt poprawnie usunięty",5000, Notification.Position.MIDDLE);
                         dialog.close();
@@ -151,11 +147,10 @@ public class ProductManagerView extends Div {
                         Notification.show("Błędy kod autoryzacji",5000, Notification.Position.MIDDLE);
                     }
 
-                    refreshGrid(grid,productRepository);
+                    refreshGrid(grid,productService);
                 });
 
                 dialog.open();
-                refreshGrid(grid,productRepository); //try to delete this
             });
 
             HorizontalLayout layout = new HorizontalLayout();
@@ -163,11 +158,11 @@ public class ProductManagerView extends Div {
 
             return layout;
         })).setHeader("Akcje").setAutoWidth(true);
-        refreshGrid(grid,productRepository);
+        refreshGrid(grid,productService);
     }
 
-    private void refreshGrid(Grid<Product> grid,ProductRepository productRepository) {
-        grid.setDataProvider(new ListDataProvider<>(productRepository.findAllProducts()));
+    private void refreshGrid(Grid<Product> grid,ProductService productService) {
+        grid.setDataProvider(new ListDataProvider<>(productService.getAllProducts()));
         grid.getDataProvider().refreshAll();
     }
 
@@ -179,3 +174,4 @@ public class ProductManagerView extends Div {
         grid.addColumn(product -> product.getId() != null ? product.getId() : "").setHeader("ID").setAutoWidth(true);
     }
 }
+

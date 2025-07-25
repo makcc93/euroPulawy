@@ -34,10 +34,7 @@ import pl.eurokawa.storage.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.terms.TermsOfServiceRepository;
 import pl.eurokawa.terms.TermsOfServiceService;
-import pl.eurokawa.token.Token;
-import pl.eurokawa.token.TokenRepository;
-import pl.eurokawa.token.TokenService;
-import pl.eurokawa.token.TokenType;
+import pl.eurokawa.token.*;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserRepository;
 import pl.eurokawa.views.layouts.EmptyLayout;
@@ -58,26 +55,24 @@ public class LoginRegisterView extends Div {
     private final UserRepository userRepository;
     private static final Logger logger = LogManager.getLogger(LoginRegisterView.class);
     private final PasswordValidator passwordValidator;
-    private final TokenService tokenService;
     private final EmailService emailService;
-    private final TokenRepository tokenRepository;
     private final TermsOfServiceRepository termsOfServiceRepository;
     private final TermsOfServiceService termsOfServiceService;
     private final S3Service s3Service;
     private final S3Config s3Config;
+    private final TokenService tokenService;
 
-    public LoginRegisterView(AuthenticationManager authenticationManager, UserService userService, UserRepository userRepository, PasswordValidator passwordValidator, TokenService tokenService, EmailService emailService, TokenRepository tokenRepository, TermsOfServiceRepository termsOfServiceRepository, TermsOfServiceService termsOfServiceService, S3Service s3Service, S3Config s3Config) {
+    public LoginRegisterView(AuthenticationManager authenticationManager, UserService userService, UserRepository userRepository, PasswordValidator passwordValidator, EmailService emailService, TermsOfServiceRepository termsOfServiceRepository, TermsOfServiceService termsOfServiceService, S3Service s3Service, S3Config s3Config, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.userRepository = userRepository;
         this.passwordValidator = passwordValidator;
-        this.tokenService = tokenService;
         this.emailService = emailService;
-        this.tokenRepository = tokenRepository;
         this.termsOfServiceRepository = termsOfServiceRepository;
         this.termsOfServiceService = termsOfServiceService;
         this.s3Service = s3Service;
         this.s3Config = s3Config;
+        this.tokenService = tokenService;
 
         HorizontalLayout layout = pageView();
 
@@ -183,7 +178,6 @@ public class LoginRegisterView extends Div {
             if (validateRegistration(firstName,lastName,email,password,confirmPassword)){
                 User registeredUser = userService.registerUser(firstName, lastName, email, password);
                 Token token = tokenService.generateToken(registeredUser, TokenType.REGISTRATION);
-                tokenRepository.save(token);
 
                 emailService.sendEmailConfirmationLink(registeredUser.getEmail(),token.getValue());
 
@@ -194,7 +188,6 @@ public class LoginRegisterView extends Div {
                 clearPassword(passwordField,confirmPasswordField);
 
                 Token accountConfirmationToken = tokenService.generateToken(registeredUser,TokenType.ACCOUNT_CONFIRMATION);
-                tokenRepository.save(accountConfirmationToken);
 
                 emailService.sendEmailNotificationToAdmins(EmailType.NEW_USER_REGISTER,registeredUser, accountConfirmationToken.getValue());
             }
@@ -397,8 +390,9 @@ public class LoginRegisterView extends Div {
                 Token token = tokenService.generateToken(userByEmail.orElseThrow(), TokenType.PASSWORD_RESET);
 
                 emailService.sendSixNumbersCode(email,token.getValue());
+
                 Notification.show("Kod autoryzacji wysłano na emaila " + email,3000, Notification.Position.TOP_CENTER);
-                tokenRepository.save(token);
+
 
                 Dialog tokenDialog = new Dialog();
 
@@ -406,7 +400,7 @@ public class LoginRegisterView extends Div {
 
                 layoutForDialog.getSaveButton().addClickListener(saveEvent ->{
                     String inputValue = layoutForDialog.getTextField().getValue();
-                    String emailTokenValue = tokenRepository.findFirstByUserIdOrderByIdDesc(userByEmail.orElseThrow().getId()).getValue();
+                    String emailTokenValue = tokenService.getLastUserTokenByType(userByEmail.orElseThrow().getId(),TokenType.PASSWORD_RESET).getValue();
 
                     if (inputValue.equals(emailTokenValue)) {
                         userService.setUserNewPassword(email, password);
@@ -423,7 +417,7 @@ public class LoginRegisterView extends Div {
                 });
 
                 layoutForDialog.getCancelButton().addClickListener(cancelEvent ->{
-                    tokenRepository.delete(token);
+                    tokenService.delete(token);
 
                     tokenDialog.close();
                 });
