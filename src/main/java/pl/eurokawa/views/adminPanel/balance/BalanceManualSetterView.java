@@ -17,10 +17,7 @@ import pl.eurokawa.balance.BalanceRepository;
 import pl.eurokawa.balance.BalanceServiceImpl;
 import pl.eurokawa.email.EmailService;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.token.Token;
-import pl.eurokawa.token.TokenRepository;
-import pl.eurokawa.token.TokenServiceImpl;
-import pl.eurokawa.token.TokenType;
+import pl.eurokawa.token.*;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
 import pl.eurokawa.views.layouts.LayoutForDialog;
@@ -35,14 +32,14 @@ public class BalanceManualSetterView extends Div {
     private final SecurityService securityService;
     private final EmailService emailService;
     private TextField newBalance;
+    private final TokenService tokenService;
 
-    public BalanceManualSetterView(BalanceRepository balanceRepository, BalanceServiceImpl balanceServiceImpl, SecurityService securityService, TokenServiceImpl tokenServiceImpl, EmailService emailService, TokenRepository tokenRepository){
+    public BalanceManualSetterView(BalanceRepository balanceRepository, BalanceServiceImpl balanceServiceImpl, SecurityService securityService, TokenServiceImpl tokenServiceImpl, EmailService emailService, TokenRepository tokenRepository, TokenService tokenService){
         this.balanceRepository = balanceRepository;
         this.balanceServiceImpl = balanceServiceImpl;
         this.securityService = securityService;
-        this.tokenServiceImpl = tokenServiceImpl;
         this.emailService = emailService;
-        this.tokenRepository = tokenRepository;
+        this.tokenService = tokenService;
 
         H4 header = new H4 ("USTAL WARTOŚĆ DOSTĘPNYCH ŚRODKÓW");
         header.getStyle().set("text-align", "center")
@@ -99,8 +96,8 @@ public class BalanceManualSetterView extends Div {
             dialogWindow.add(layoutForDialog);
 
             User loggedUser = securityService.getLoggedUser();
-            Token token = tokenServiceImpl.generateToken(loggedUser, TokenType.SIX_NUMBERS);
-            tokenRepository.save(token);
+            Token token = tokenService.generateToken(loggedUser, TokenType.BALANCE_SETTER);
+
             emailService.sendSixNumbersCode(loggedUser.getEmail(),token.getValue());
 
             layoutForDialog.getSaveButton().addClickListener(confirm ->{
