@@ -9,10 +9,10 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.server.VaadinService;
 import org.apache.logging.log4j.LogManager;
-import org.springframework.stereotype.Service;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Service;
 import pl.eurokawa.product.Product;
-import pl.eurokawa.product.ProductRepository;
+import pl.eurokawa.product.ProductService;
 import pl.eurokawa.security.S3Config;
 import pl.eurokawa.storage.FileType;
 import pl.eurokawa.storage.S3Service;
@@ -24,21 +24,21 @@ import java.util.List;
 @Service
 public class PurchaseService{
     private PurchaseRepository purchaseRepository;
-    private ProductRepository productRepository;
     private final S3Service s3Service;
     private final S3Config s3Config;
+    private final ProductService productService;
 
     private static final Logger logger = LogManager.getLogger(PurchaseService.class);
 
-    public PurchaseService(PurchaseRepository purchaseRepository, ProductRepository productRepository, S3Service s3Service, S3Config s3Config){
+    public PurchaseService(PurchaseRepository purchaseRepository, S3Service s3Service, S3Config s3Config, ProductService productService){
         this.purchaseRepository = purchaseRepository;
-        this.productRepository = productRepository;
         this.s3Service = s3Service;
         this.s3Config = s3Config;
+        this.productService = productService;
     }
 
     public Purchase addPurchase(User user, Integer productId, BigDecimal price, Integer quantity){
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productService.findById(productId);
         Purchase purchase = new Purchase(user, product, price, quantity);
         purchase.setSaved(true);
 
@@ -46,7 +46,7 @@ public class PurchaseService{
     }
 
     public Purchase addPurchase(User user, Integer productId, BigDecimal price, Integer quantity,String receiptImagePath){
-        Product product = productRepository.findById(productId).orElseThrow();
+        Product product = productService.findById(productId);
         Purchase purchase = new Purchase(user, product, price, quantity,receiptImagePath);
         purchase.setSaved(true);
 

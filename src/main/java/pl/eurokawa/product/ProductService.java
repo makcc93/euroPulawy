@@ -9,5 +9,6 @@ public interface ProductService {
     Product create(String name);
     Product save(Product product);
     void delete(Product product);
+    Product findById(Integer id);
 
 }
