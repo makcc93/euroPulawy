@@ -11,10 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
-import pl.eurokawa.balance.Balance;
-import pl.eurokawa.balance.BalanceBroadcaster;
-import pl.eurokawa.balance.BalanceRepository;
-import pl.eurokawa.balance.BalanceServiceImpl;
+import pl.eurokawa.balance.*;
 import pl.eurokawa.email.EmailService;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.token.*;
@@ -27,19 +24,18 @@ import java.math.BigDecimal;
 @RolesAllowed("ADMIN")
 @Route("manual-balance-setter")
 public class BalanceManualSetterView extends Div {
-    private final BalanceRepository balanceRepository;
-    private final BalanceServiceImpl balanceServiceImpl;
     private final SecurityService securityService;
     private final EmailService emailService;
     private TextField newBalance;
     private final TokenService tokenService;
+    private final BalanceService balanceService;
 
-    public BalanceManualSetterView(BalanceRepository balanceRepository, BalanceServiceImpl balanceServiceImpl, SecurityService securityService, TokenServiceImpl tokenServiceImpl, EmailService emailService, TokenRepository tokenRepository, TokenService tokenService){
-        this.balanceRepository = balanceRepository;
-        this.balanceServiceImpl = balanceServiceImpl;
+    public BalanceManualSetterView(SecurityService securityService, EmailService emailService, TokenService tokenService, BalanceService balanceService){
+
         this.securityService = securityService;
         this.emailService = emailService;
         this.tokenService = tokenService;
+        this.balanceService = balanceService;
 
         H4 header = new H4 ("USTAL WARTOŚĆ DOSTĘPNYCH ŚRODKÓW");
         header.getStyle().set("text-align", "center")
@@ -57,7 +53,7 @@ public class BalanceManualSetterView extends Div {
                 .set("text-align", "center")
                 .set("font-size", "36px")
                 .set("margin-top", "auto");
-        newBalance.setValue(String.format("%.2f",balanceRepository.findLastBalanceValue().getAmount()));
+        newBalance.setValue(String.format("%.2f",balanceService.getCurrentBalance()));
         valueChangeListener(newBalance);
 
         Button save = new Button("Zatwierdź");
@@ -108,9 +104,9 @@ public class BalanceManualSetterView extends Div {
 
                     newBalance.setValue(changedBalance.toString());
 
-                    balanceServiceImpl.updateBalance(loggedUser,newValue, TransactionType.MANUAL);
+                    balanceService.updateBalance(loggedUser,newValue, TransactionType.MANUAL);
 
-                    BalanceBroadcaster.broadcast(balanceServiceImpl.getCurrentBalance());
+                    BalanceBroadcaster.broadcast(balanceService.getCurrentBalance());
 
                     Notification.show("Nowa wartość ustawiona poprawnie",5000, Notification.Position.BOTTOM_CENTER);
                     dialogWindow.close();

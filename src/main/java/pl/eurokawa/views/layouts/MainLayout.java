@@ -30,16 +30,16 @@ import pl.eurokawa.user.UserType;
 import pl.eurokawa.views.HomeView;
 import pl.eurokawa.views.account.UserAccountView;
 import pl.eurokawa.views.adminPanel.balance.BalanceManualSetterView;
-import pl.eurokawa.views.adminPanel.product.ProductManagerView;
+import pl.eurokawa.views.adminPanel.product.ProductManagerViewSOLID;
+import pl.eurokawa.views.adminPanel.terms.TermsOfServiceAdderView;
+import pl.eurokawa.views.adminPanel.terms.TermsOfServiceListView;
 import pl.eurokawa.views.deposits.DepositAdderView;
 import pl.eurokawa.views.deposits.DepositConfirmationView;
 import pl.eurokawa.views.deposits.DepositListView;
-import pl.eurokawa.views.user.UserView;
+import pl.eurokawa.views.purchase.PurchaseAdderView;
 import pl.eurokawa.views.purchase.PurchaseConfirmationView;
 import pl.eurokawa.views.purchase.PurchaseHistoryView;
-import pl.eurokawa.views.purchase.PurchaseAdderView;
-import pl.eurokawa.views.adminPanel.terms.TermsOfServiceAdderView;
-import pl.eurokawa.views.adminPanel.terms.TermsOfServiceListView;
+import pl.eurokawa.views.user.UserView;
 
 import java.math.BigDecimal;
 import java.util.Timer;
@@ -198,7 +198,7 @@ public class MainLayout extends AppLayout {
         adminPanel.addItem(new SideNavItem("Regulamin", TermsOfServiceAdderView.class,VaadinIcon.BOOK.create()));
         adminPanel.addItem(new SideNavItem("Historia Regulaminów", TermsOfServiceListView.class,VaadinIcon.LINES_LIST.create()));
         adminPanel.addItem(new SideNavItem("Dostępne środki", BalanceManualSetterView.class,VaadinIcon.BOOK_DOLLAR.create()));
-        adminPanel.addItem(new SideNavItem("Produkty", ProductManagerView.class,VaadinIcon.COFFEE.create()));
+        adminPanel.addItem(new SideNavItem("Produkty", ProductManagerViewSOLID.class,VaadinIcon.COFFEE.create()));
         adminPanel.setVisible(securityService.loggedUserHasRole(UserType.ADMIN.name()));
 
         coffeeMembers.addItem(deposit,shopping);
