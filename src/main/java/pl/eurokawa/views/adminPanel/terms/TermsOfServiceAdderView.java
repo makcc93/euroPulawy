@@ -3,16 +3,16 @@ package pl.eurokawa.views.adminPanel.terms;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+import pl.eurokawa.file.FileServiceImpl;
+import pl.eurokawa.file.FileType;
+import pl.eurokawa.file.name.NameConversionService;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.storage.FileAdderService;
-import pl.eurokawa.storage.FileConversionService;
-import pl.eurokawa.storage.FileType;
+import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.terms.TermsOfService;
 import pl.eurokawa.terms.TermsOfServiceRepository;
 
@@ -22,16 +22,16 @@ import java.io.InputStream;
 @RolesAllowed("ADMIN")
 public class TermsOfServiceAdderView extends Div {
 
-    private final FileAdderService fileAdderService;
+    private final FileServiceImpl fileServiceImpl;
     private final SecurityService securityService;
     private final TermsOfServiceRepository termsOfServiceRepository;
-    private final FileConversionService fileConversionService;
+    private final NameConversionService nameConversionService;
 
-    public TermsOfServiceAdderView(FileAdderService fileAdderService, SecurityService securityService, TermsOfServiceRepository termsOfServiceRepository, FileConversionService fileConversionService){
-        this.fileAdderService = fileAdderService;
+    public TermsOfServiceAdderView(FileServiceImpl fileServiceImpl, SecurityService securityService, TermsOfServiceRepository termsOfServiceRepository, NameConversionService nameConversionService){
+        this.fileServiceImpl = fileServiceImpl;
         this.securityService = securityService;
         this.termsOfServiceRepository = termsOfServiceRepository;
-        this.fileConversionService = fileConversionService;
+        this.nameConversionService = nameConversionService;
 
         VerticalLayout layout = new VerticalLayout();
         H2 header = new H2("DODAWANIE NOWEGO REGULAMINU");
@@ -59,12 +59,12 @@ public class TermsOfServiceAdderView extends Div {
 
         upload.addSucceededListener(succeededEvent ->{
             try(InputStream inputStream = memoryBuffer.getInputStream()){
-                String secureFileName = fileConversionService.generateSecureFileName(succeededEvent.getFileName());
+                String secureFileName = nameConversionService.generateSecureFileName(succeededEvent.getFileName());
 
                 TermsOfService termsOfService = new TermsOfService(secureFileName,securityService.getLoggedUser());
                 termsOfServiceRepository.save(termsOfService);
 
-                fileAdderService.uploadFile(FileType.TERMS,inputStream,secureFileName);
+                fileServiceImpl.uploadFile(FileType.TERMS,inputStream,secureFileName);
                 Notification.show("Regulamin dodany prawidlowo",5000, Notification.Position.BOTTOM_CENTER);
 
                 upload.setVisible(false);

@@ -20,10 +20,6 @@ public class Product extends AbstractEntity {
     private List<Purchase> purchases = new ArrayList<>();
 
     public Product(){}
-//
-//    public Product(int id){
-//        this.id = id;
-//    }
 
     public Product(String name){
         this.name = name;

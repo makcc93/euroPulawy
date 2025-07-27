@@ -30,7 +30,7 @@ import pl.eurokawa.email.EmailType;
 import pl.eurokawa.security.PasswordValidator;
 import pl.eurokawa.email.EmailService;
 import pl.eurokawa.security.S3Config;
-import pl.eurokawa.storage.FileType;
+import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.terms.TermsOfServiceRepository;
 import pl.eurokawa.terms.TermsOfServiceService;
@@ -202,7 +202,7 @@ public class LoginRegisterView extends Div {
         termsAndConditions.addClickListener(checkboxClickEvent -> {
             registerButton.setEnabled(termsAndConditions.getValue());
         });
-        termsAndConditions.setLabelComponent(termsOfServiceService.getTermsOfServiceLink(FileType.TERMS,termsOfServiceRepository.findCurrentActual(),s3Service,"Zapoznałem się z regulaminem serwisu"));
+        termsAndConditions.setLabelComponent(termsOfServiceService.getTermsOfServiceLink(FileType.TERMS,termsOfServiceRepository.findCurrentActual(), s3Service,"Zapoznałem się z regulaminem serwisu"));
 
         FormLayout registerForm = new FormLayout();
         registerForm.add(firstNameField,lastNameField,emailField,passwordField,confirmPasswordField,registerButton,termsAndConditions);

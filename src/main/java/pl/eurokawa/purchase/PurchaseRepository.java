@@ -23,10 +23,4 @@ public interface PurchaseRepository extends JpaRepository<Purchase, Integer>, Jp
 
     @Query("SELECT p FROM Purchase p JOIN p.user u WHERE p.isSaved = true AND p.isConfirmed = false AND u.id = :id ORDER BY p.id DESC")
     List<Purchase> findUserSavedPurchases(@Param("id") Integer id);
-
-    @Query("SELECT p FROM Purchase p WHERE p.receiptImagePath = :fileName")
-    Optional<Purchase> findPurchaseByImageName(String fileName);
-
-    @Query("DELETE FROM Purchase p WHERE p.id = :id")
-    void deletePurchaseById(@Param("id") Integer id);
 }

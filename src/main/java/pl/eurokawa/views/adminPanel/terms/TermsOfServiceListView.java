@@ -14,7 +14,7 @@ import com.vaadin.flow.router.Route;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.eurokawa.other.DateFormatter;
-import pl.eurokawa.storage.FileType;
+import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.terms.TermsOfService;
 import pl.eurokawa.terms.TermsOfServiceRepository;
@@ -43,7 +43,7 @@ public class TermsOfServiceListView extends Div {
         dataProvider = new ListDataProvider<>(termsOfServiceList);
         Grid<TermsOfService> grid = new Grid<>(TermsOfService.class, false);
         grid.setDataProvider(dataProvider);
-        createColumns(grid,s3Service,termsOfServiceRepository);
+        createColumns(grid, s3Service,termsOfServiceRepository);
 
         grid.setItems(termsOfServiceList);
         grid.setAllRowsVisible(true);
@@ -54,12 +54,12 @@ public class TermsOfServiceListView extends Div {
     }
 
 
-    private void createColumns(Grid<TermsOfService> grid,S3Service s3Service,TermsOfServiceRepository termsOfServiceRepository){
+    private void createColumns(Grid<TermsOfService> grid, S3Service s3Service, TermsOfServiceRepository termsOfServiceRepository){
         grid.addColumn(TermsOfService::getId).setHeader("ID").setAutoWidth(true);
         grid.addColumn(TermsOfService::getFileName).setHeader("SZYFROWANA NAZWA").setAutoWidth(true);
         grid.addColumn(new ComponentRenderer<>(termsOfService -> new Span(dateFormatter.formatToEuropeWarsaw(String.valueOf(termsOfService.getCreatedAt())))))
                 .setHeader("DATA DODANIA").setAutoWidth(true);
-        grid.addColumn(new ComponentRenderer<>(termsOfService -> termsOfServiceService.getTermsOfServiceLink(FileType.TERMS,termsOfService,s3Service))).setHeader("PODGLĄD REGULAMINU").setAutoWidth(true);
+        grid.addColumn(new ComponentRenderer<>(termsOfService -> termsOfServiceService.getTermsOfServiceLink(FileType.TERMS,termsOfService, s3Service))).setHeader("PODGLĄD REGULAMINU").setAutoWidth(true);
         createIsActualColumn(grid);
         createActionButtons(grid,termsOfServiceRepository);
     }

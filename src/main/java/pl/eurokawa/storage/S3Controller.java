@@ -8,26 +8,25 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import pl.eurokawa.purchase.Purchase;
+import pl.eurokawa.file.FileType;
 import pl.eurokawa.purchase.PurchaseRepository;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import java.io.IOException;
 import java.net.URLConnection;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/s3")
 public class S3Controller {
     private static final Logger log = LogManager.getLogger(S3Controller.class);
-    private final S3Service s3Service;
     private final PurchaseRepository purchaseRepository;
+    private final S3Service s3Service;
 
     @Autowired
-    public S3Controller(S3Service s3Service, PurchaseRepository purchaseRepository){
-        this.s3Service = s3Service;
+    public S3Controller(PurchaseRepository purchaseRepository, S3Service s3Service){
         this.purchaseRepository = purchaseRepository;
+        this.s3Service = s3Service;
     }
 
     @GetMapping("/download/{folderName}/{fileKey:.+}")
@@ -57,10 +56,10 @@ public class S3Controller {
         log.info("putmapping, file = {}, mime = {}, size = {}, folderName = {}",file.getOriginalFilename(),file.getContentType(),file.getSize(),folderName);
         try{
             FileType fileType = FileType.findTypeByFolderName(folderName);
-            s3Service.uploadFile(fileType,fileKey,file.getBytes());
+            s3Service.uploadFileToS3(fileType,fileKey,file.getBytes());
 
             log.info("""
-                SUCCESS S3Controller PutMapping, 
+                SUCCESS S3Controller PutMapping,
                 fileType = {}
                 file = {}
                 mime = {}

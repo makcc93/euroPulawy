@@ -1,4 +1,4 @@
-package pl.eurokawa.storage;
+package pl.eurokawa.file;
 
 public enum FileType {
     PHOTO("photos","image/jpeg"),

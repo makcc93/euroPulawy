@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.eurokawa.security.S3Config;
-import pl.eurokawa.storage.FileType;
+import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 
 @Service
@@ -39,7 +39,7 @@ public class TermsOfServiceService {
         return link;
     }
 
-    public Component getTermsOfServiceLink(FileType fileType, TermsOfService termsOfService, S3Service s3Service,String message){
+    public Component getTermsOfServiceLink(FileType fileType, TermsOfService termsOfService, S3Service s3Service, String message){
         if (termsOfService.getFileName() == null){
             return new H4("Brak obrazu");
         }

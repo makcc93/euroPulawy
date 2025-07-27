@@ -19,8 +19,8 @@ import pl.eurokawa.balance.BalanceServiceImpl;
 import pl.eurokawa.other.DateFormatter;
 import pl.eurokawa.purchase.Purchase;
 import pl.eurokawa.purchase.PurchaseRepository;
-import pl.eurokawa.purchase.PurchaseService;
-import pl.eurokawa.storage.FileType;
+import pl.eurokawa.purchase.PurchaseServiceImpl;
+import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.transaction.Transaction;
 import pl.eurokawa.transaction.TransactionRepository;
@@ -34,7 +34,7 @@ import java.util.List;
 @Menu(order = 3, icon = LineAwesomeIconUrl.CHECK_CIRCLE)
 public class PurchaseConfirmationView extends Div {
 
-    private final PurchaseService purchaseService;
+    private final PurchaseServiceImpl purchaseServiceImpl;
     private final BalanceServiceImpl balanceServiceImpl;
     private final PurchaseRepository purchaseRepository;
     private final TransactionRepository transactionRepository;
@@ -43,12 +43,12 @@ public class PurchaseConfirmationView extends Div {
     private final ListDataProvider<Purchase> dataProvider;
     private final DateFormatter dateFormatter;
 
-    public PurchaseConfirmationView(PurchaseService purchaseService, BalanceServiceImpl balanceServiceImpl, PurchaseRepository purchaseRepository, TransactionRepository transactionRepository, S3Service s3Service, DateFormatter dateFormatter) {
-        this.purchaseService = purchaseService;
+    public PurchaseConfirmationView(PurchaseServiceImpl purchaseServiceImpl, BalanceServiceImpl balanceServiceImpl, PurchaseRepository purchaseRepository, TransactionRepository transactionRepository, S3Service s3Service, DateFormatter dateFormatter) {
+        this.purchaseServiceImpl = purchaseServiceImpl;
         this.balanceServiceImpl = balanceServiceImpl;
         this.purchaseRepository = purchaseRepository;
         this.transactionRepository = transactionRepository;
-        this.purchases = purchaseService.getSavedNotConfirmedPurchases();
+        this.purchases = purchaseServiceImpl.getSavedNotConfirmedPurchases();
         this.s3Service = s3Service;
         this.dateFormatter = dateFormatter;
 
@@ -73,7 +73,7 @@ public class PurchaseConfirmationView extends Div {
 
         grid.addColumn(Purchase::getTotal).setHeader("WARTOŚĆ").setWidth("50px");
 
-        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseService.getPurchasePhoto(FileType.PHOTO,purchase,s3Service)))
+        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseServiceImpl.getPurchasePhoto(FileType.PHOTO,purchase, s3Service)))
                 .setHeader("DOWÓD ZAKUPU").setAutoWidth(true);
 
         createActionButtons(grid);

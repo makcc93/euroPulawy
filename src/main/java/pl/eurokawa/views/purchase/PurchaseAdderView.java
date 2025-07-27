@@ -28,19 +28,19 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
+import pl.eurokawa.file.FileService;
+import pl.eurokawa.file.FileType;
+import pl.eurokawa.file.name.NameConversionService;
 import pl.eurokawa.product.Product;
 import pl.eurokawa.product.ProductService;
 import pl.eurokawa.purchase.Purchase;
-import pl.eurokawa.purchase.PurchaseRepository;
 import pl.eurokawa.purchase.PurchaseService;
-import pl.eurokawa.storage.FileAdderService;
-import pl.eurokawa.storage.FileConversionService;
-import pl.eurokawa.storage.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.transaction.TransactionRepository;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserRepository;
 import pl.eurokawa.user.UserService;
+import pl.eurokawa.views.purchase.DTO.CreatePurchaseRequest;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,38 +55,35 @@ import java.util.List;
 @EnableConfigurationProperties
 public class PurchaseAdderView extends VerticalLayout {
     private final ProductService productService;
-    private final PurchaseService purchaseService;
-    private final PurchaseRepository purchaseRepository;
     private final UserService userService;
     private final UserRepository userRepository;
-    private final FileAdderService fileAdderService;
+    private final FileService fileService;
     private final S3Service s3Service;
     private final TransactionRepository transactionRepository;
-    private final FileConversionService fileConversionService;
+    private final NameConversionService nameConversionService;
+    private final PurchaseService purchaseService;
 
     private static final Logger logger = LogManager.getLogger(PurchaseAdderView.class);
 
     private final Grid<Purchase> addPurchaseGrid;
     private final Grid<Purchase> savedPurchasesGrid;
-    private final List<Purchase> notSavedUserPurchases = new ArrayList<>();
-    private List<Purchase> savedUserPurchases = new ArrayList<>();
+    private final List<Purchase> notSavedPurchases = new ArrayList<>();
+    private List<Purchase> savedPurchases = new ArrayList<>();
     private final ListDataProvider<Purchase> dataProviderForAddPurchase;
     private final ListDataProvider<Purchase> dataProviderForUserPurchases;
 
-    public PurchaseAdderView(ProductService productService, PurchaseService purchaseService, UserService userService,
-                             PurchaseRepository purchaseRepository, UserRepository userRepository, FileAdderService fileAdderService, S3Service s3Service, TransactionRepository transactionRepository, FileConversionService fileConversionService) {
+    public PurchaseAdderView(ProductService productService, UserService userService, UserRepository userRepository, FileService fileService, S3Service s3Service, TransactionRepository transactionRepository, NameConversionService nameConversionService, PurchaseService purchaseService) {
         this.productService = productService;
-        this.purchaseService = purchaseService;
-        this.purchaseRepository = purchaseRepository;
         this.userService = userService;
         this.userRepository = userRepository;
-        this.fileAdderService = fileAdderService;
+        this.fileService = fileService;
         this.s3Service = s3Service;
         this.transactionRepository = transactionRepository;
-        this.fileConversionService = fileConversionService;
+        this.nameConversionService = nameConversionService;
+        this.purchaseService = purchaseService;
         Component topHeader = firstGridHeader();
 
-        dataProviderForAddPurchase = new ListDataProvider<>(notSavedUserPurchases);
+        dataProviderForAddPurchase = new ListDataProvider<>(notSavedPurchases);
 
         addPurchaseGrid = new Grid<>(Purchase.class,false);
             addPurchaseGrid.setDataProvider(dataProviderForAddPurchase);
@@ -97,7 +94,7 @@ public class PurchaseAdderView extends VerticalLayout {
         createQuantityColumn(addPurchaseGrid);
         createPriceColumn(addPurchaseGrid);
         createSumColumn(addPurchaseGrid);
-        createPhotoAdderColumn(addPurchaseGrid,s3Service);
+        createPhotoAdderColumn(addPurchaseGrid, s3Service);
 
         createActionsButtons(addPurchaseGrid);
         addEmptyRow();
@@ -109,14 +106,14 @@ public class PurchaseAdderView extends VerticalLayout {
 
         Component bottomHeader = secondGridHeader();
 
-        savedUserPurchases = purchaseRepository.findUserSavedPurchases(loggedUser().getId());
-        dataProviderForUserPurchases = new ListDataProvider<>(savedUserPurchases);
+        savedPurchases = purchaseService.findUserSavedPurchases(loggedUser().getId());
+        dataProviderForUserPurchases = new ListDataProvider<>(savedPurchases);
 
         savedPurchasesGrid = new Grid<>(Purchase.class,false);
             savedPurchasesGrid.setDataProvider(dataProviderForUserPurchases);
-            savedPurchasesGrid.setItems(savedUserPurchases);
+            savedPurchasesGrid.setItems(savedPurchases);
 
-        createColumnsUserSavedPurchases(savedPurchasesGrid,s3Service);
+        createColumnsUserSavedPurchases(savedPurchasesGrid, s3Service);
 
         add(topHeader,addPurchaseGrid, plusButton, bottomHeader, savedPurchasesGrid);
     }
@@ -132,7 +129,7 @@ public class PurchaseAdderView extends VerticalLayout {
 
         grid.addColumn(Purchase::getTotal).setHeader("WARTOŚĆ").setWidth("50px");
 
-        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseService.getPurchasePhoto(FileType.PHOTO,purchase,s3Service))) //testtest
+        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseService.getPurchasePhoto(FileType.PHOTO,purchase, s3Service)))
                 .setHeader("DOWÓD ZAKUPU").setAutoWidth(true);
     }
 
@@ -144,27 +141,22 @@ public class PurchaseAdderView extends VerticalLayout {
         return new H2("TWOJE ZAKUPY OCZEKUJĄCE NA ZATWIERDZENIE");
     }
 
-    private void createPhotoAdderColumn(Grid<Purchase> grid,S3Service s3Service){
+    private void createPhotoAdderColumn(Grid<Purchase> grid, S3Service s3Service){
         grid.addColumn(new ComponentRenderer<>(purchase ->{
 
             if (purchase.isSaved() && purchase.getReceiptImagePath() != null){
-                return purchaseService.getPurchasePhoto(FileType.PHOTO,purchase,s3Service);
+                return purchaseService.getPurchasePhoto(FileType.PHOTO,purchase, s3Service);
             }
 
             MemoryBuffer memoryBuffer = new MemoryBuffer();
             Upload upload = new Upload(memoryBuffer);
-                upload.setVisible(uploadButtonVisibilityCheck(purchase));
-                upload.setAcceptedFileTypes("image/*", ".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp");
-                upload.setMaxFileSize(10 * 1024 * 1024);
-                upload.setUploadButton(VaadinIcon.CAMERA.create());
-                upload.setDropAllowed(false);
-                upload.setAutoUpload(true);
+                configureUpload(upload,purchase);
 
             upload.addSucceededListener(succeededEvent -> {
                 try(InputStream inputStream = memoryBuffer.getInputStream()) {
-                    String secureFileName = fileConversionService.generateSecureFileName(succeededEvent.getFileName());
+                    String secureFileName = nameConversionService.generateSecureFileName(succeededEvent.getFileName());
 
-                    fileAdderService.uploadFile(FileType.PHOTO,inputStream,secureFileName);
+                    fileService.uploadFile(FileType.PHOTO,inputStream,secureFileName);
                     purchase.setReceiptImagePath(secureFileName);
 
                     Notification.show("Zdjęcie dodano prawidłowo",5000, Notification.Position.TOP_CENTER);
@@ -196,15 +188,9 @@ public class PurchaseAdderView extends VerticalLayout {
         purchase.setPrice(BigDecimal.valueOf(0.00));
         purchase.setTotal(BigDecimal.valueOf(0.00));
 
-        notSavedUserPurchases.add(purchase);
+        notSavedPurchases.add(purchase);
         refreshGrid(addPurchaseGrid);
     }
-
-    private void deleteRow(Purchase purchase){
-        notSavedUserPurchases.remove(purchase);
-        refreshGrid(addPurchaseGrid);
-    }
-
 
     private void createProductColumn(Grid<Purchase> grid) {
         grid.addColumn(new ComponentRenderer<>(purchase -> {
@@ -283,10 +269,6 @@ public class PurchaseAdderView extends VerticalLayout {
 
                 purchase.updateTotal();
                 refreshGrid(grid);
-
-                if (value == null) {
-                    priceField.setValue("0.00");
-                }
             });
 
             return priceField;
@@ -298,46 +280,30 @@ public class PurchaseAdderView extends VerticalLayout {
                 .setHeader("SUMA").setAutoWidth(true).setAutoWidth(true);
     }
 
+    private void configureUpload(Upload upload, Purchase purchase){
+        upload.setVisible(uploadButtonVisibilityCheck(purchase));
+        upload.setAcceptedFileTypes("image/*", ".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp");
+        upload.setMaxFileSize(10 * 1024 * 1024);
+        upload.setUploadButton(VaadinIcon.CAMERA.create());
+        upload.setDropAllowed(false);
+        upload.setAutoUpload(true);
+    }
+
     private void createActionsButtons(Grid<Purchase> grid){
         grid.addColumn(new ComponentRenderer<>(purchase -> {
             Button save = new Button(new Icon(VaadinIcon.CHECK));
             save.addThemeVariants(ButtonVariant.LUMO_SUCCESS, ButtonVariant.LUMO_PRIMARY);
             save.setTooltipText("Zapisz");
-
             save.setVisible(!purchase.isSaved());
 
             save.addClickListener(event -> {
+                if (isCorrectChosen(purchase)){
+                    onSaveButtonClick(loggedUser(),purchase);
 
-                if (purchase.getProduct() != null && purchase.getPrice() != null && purchase.getPrice().compareTo(BigDecimal.ZERO) != 0) {
-                    User user = loggedUser();
-
-                    if (purchase.getReceiptImagePath() != null){
-                        purchaseService.addPurchase(user, purchase.getProduct().getId(), purchase.getPrice(), purchase.getQuantity(),purchase.getReceiptImagePath());
-
-                    } else {
-                        purchaseService.addPurchase(user, purchase.getProduct().getId(), purchase.getPrice(), purchase.getQuantity());
-                    }
-                    purchase.setSaved(true);
-                    notSavedUserPurchases.remove(purchase);
-                    savedUserPurchases.add(purchase);
-
-//                    savedUserPurchases = purchaseRepository.findUserSavedPurchases(loggedUser().getId());
-//                    dataProviderForUserPurchases.refreshAll();
-
-                    refreshListGrid(savedPurchasesGrid,purchaseRepository);
-
-                    addEmptyRow();
-
-                    Notification notification = Notification.show("Poprawnie dodano zakup");
-                    notification.setPosition(Notification.Position.MIDDLE);
-                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                    notification.setDuration(3000);
+                    Notification.show("Poprawnie dodano zakup",3000, Notification.Position.MIDDLE);
                 }
                 else {
-                    Notification notification = Notification.show("Uzupełnij poprawnie wszystkie dane");
-                    notification.setPosition(Notification.Position.MIDDLE);
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                    notification.setDuration(3000);
+                    Notification.show("Uzupełnij poprawnie wszystkie dane",3000, Notification.Position.MIDDLE);
                 }
             });
 
@@ -347,67 +313,59 @@ public class PurchaseAdderView extends VerticalLayout {
             reset.setVisible(!purchase.isSaved());
 
             reset.addClickListener(event -> {
-                purchase.setProduct(null);
-                purchase.setQuantity(1);
-                purchase.setPrice(BigDecimal.valueOf(0.00));
-                purchase.updateTotal();
+                onResetButtonClick(purchase);
 
-                if (purchase.getReceiptImagePath() != null){
-                    s3Service.deleteFileFromS3(FileType.PHOTO,purchase.getReceiptImagePath());
-                    purchase.setReceiptImagePath(null);
-                }
-
-                refreshGrid(addPurchaseGrid);
-                dataProviderForAddPurchase.refreshItem(purchase);
-
-                Notification notification = Notification.show("Zresetowano");
-                notification.setPosition(Notification.Position.MIDDLE);
-                notification.addThemeVariants(NotificationVariant.LUMO_WARNING);
-                notification.setDuration(1500);
-            });
-
-            Button delete = new Button(new Icon(VaadinIcon.TRASH));
-            delete.addThemeVariants(ButtonVariant.LUMO_ERROR);
-            delete.setTooltipText("Usuń");
-            delete.setVisible(!purchase.isConfirmed());
-
-            delete.addClickListener(event ->{
-                if (purchase.getId() == null){
-                    deleteRow(purchase);
-                    logger.info("SHOOPING VIEW, DELETE ADD CLICK LISTENER DLA P.ID == NULL");
-
-                    return;
-                }
-
-                notSavedUserPurchases.remove(purchase);
-                savedUserPurchases.remove(purchase);
-                purchaseRepository.deletePurchaseById(purchase.getId());
-
-                if (purchase.getReceiptImagePath() != null){
-                    s3Service.deleteFileFromS3(FileType.PHOTO,purchase.getReceiptImagePath());
-                    purchase.setReceiptImagePath(null);
-                }
-
-                dataProviderForAddPurchase.getItems().remove(purchase);
-                dataProviderForAddPurchase.refreshAll();
-                refreshGrid(addPurchaseGrid);
-
-                refreshListGrid(savedPurchasesGrid,purchaseRepository);
-
-                Notification notification = Notification.show("Usunięto");
-                notification.setPosition(Notification.Position.MIDDLE);
-                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                notification.setDuration(3000);
+               Notification.show("Zresetowano",3000, Notification.Position.MIDDLE);
             });
 
             HorizontalLayout horizontalLayout = new HorizontalLayout();
-            horizontalLayout.add(save, reset,delete);
+            horizontalLayout.add(save, reset);
 
             return horizontalLayout;
         }
         )).setHeader("AKCJE").setAutoWidth(true);
 
         refreshGrid(grid);
+    }
+
+    private void onSaveButtonClick(User user, Purchase purchase){
+        CreatePurchaseRequest request = new CreatePurchaseRequest(
+                purchase.getProduct().getId(),
+                purchase.getPrice(),
+                purchase.getQuantity(),
+                purchase.getReceiptImagePath());
+
+        purchaseService.createPurchase(user,request);
+
+        notSavedPurchases.remove(purchase);
+        savedPurchases.add(purchase);
+
+        refreshListGrid(savedPurchasesGrid,purchaseService);
+
+        addEmptyRow();
+    }
+
+    private void onResetButtonClick(Purchase purchase){
+        purchase.setProduct(null);
+        purchase.setQuantity(1);
+        purchase.setPrice(BigDecimal.valueOf(0.00));
+        purchase.updateTotal();
+
+        if (purchase.getReceiptImagePath() != null){
+            s3Service.deleteFileFromS3(FileType.PHOTO,purchase.getReceiptImagePath());
+            purchase.setReceiptImagePath(null);
+        }
+
+        refreshGrid(addPurchaseGrid);
+        dataProviderForAddPurchase.refreshItem(purchase);
+    }
+
+    private boolean isCorrectChosen(Purchase purchase){
+        if (purchase.getProduct() == null || purchase.getQuantity() == null || purchase.getPrice().compareTo(BigDecimal.ZERO) > 0){
+            return false;
+        }
+
+        return true;
     }
 
     private void refreshGrid(Grid<Purchase> grid){
@@ -426,8 +384,8 @@ public class PurchaseAdderView extends VerticalLayout {
         return !purchase.isSaved() && !purchase.isConfirmed() && purchase.getPrice().compareTo(BigDecimal.ZERO) != 0 && purchase.getQuantity() != 0;
     }
 
-    private void refreshListGrid(Grid<Purchase> grid, PurchaseRepository purchaseRepository){
-        grid.setDataProvider(new ListDataProvider<>(purchaseRepository.findUserSavedPurchases(loggedUser().getId())));
+    private void refreshListGrid(Grid<Purchase> grid, PurchaseService purchaseService){
+        grid.setDataProvider(new ListDataProvider<>(purchaseService.findUserSavedPurchases(loggedUser().getId())));
         grid.getDataProvider().refreshAll();
     }
 }
