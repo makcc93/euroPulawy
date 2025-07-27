@@ -7,17 +7,17 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserService;
+import pl.eurokawa.user.UserServiceImpl;
 
 @Service
 public class SecurityService {
 
     private final UserRepository userRepository;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
-    public SecurityService(UserRepository userRepository, UserService userService) {
+    public SecurityService(UserRepository userRepository, UserServiceImpl userServiceImpl) {
         this.userRepository = userRepository;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
     }
 
     public boolean loggedUserHasRole(String role){
@@ -62,7 +62,7 @@ public class SecurityService {
         Authentication authentication = VaadinSession.getCurrent().getAttribute(Authentication.class);
         String userEmail = authentication.getName();
 
-        return userService.getUserByEmail(userEmail)
+        return userServiceImpl.getByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Nie rozpoznano zalogowanego użytkownika!"));
     }
 

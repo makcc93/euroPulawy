@@ -33,14 +33,14 @@ import pl.eurokawa.file.FileType;
 import pl.eurokawa.file.name.NameConversionService;
 import pl.eurokawa.product.Product;
 import pl.eurokawa.product.ProductService;
+import pl.eurokawa.purchase.DTO.CreatePurchaseRequest;
 import pl.eurokawa.purchase.Purchase;
 import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.transaction.TransactionRepository;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserService;
-import pl.eurokawa.views.purchase.DTO.CreatePurchaseRequest;
+import pl.eurokawa.user.UserServiceImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +55,7 @@ import java.util.List;
 @EnableConfigurationProperties
 public class PurchaseAdderView extends VerticalLayout {
     private final ProductService productService;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final UserRepository userRepository;
     private final FileService fileService;
     private final S3Service s3Service;
@@ -72,9 +72,9 @@ public class PurchaseAdderView extends VerticalLayout {
     private final ListDataProvider<Purchase> dataProviderForAddPurchase;
     private final ListDataProvider<Purchase> dataProviderForUserPurchases;
 
-    public PurchaseAdderView(ProductService productService, UserService userService, UserRepository userRepository, FileService fileService, S3Service s3Service, TransactionRepository transactionRepository, NameConversionService nameConversionService, PurchaseService purchaseService) {
+    public PurchaseAdderView(ProductService productService, UserServiceImpl userServiceImpl, UserRepository userRepository, FileService fileService, S3Service s3Service, TransactionRepository transactionRepository, NameConversionService nameConversionService, PurchaseService purchaseService) {
         this.productService = productService;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
         this.userRepository = userRepository;
         this.fileService = fileService;
         this.s3Service = s3Service;
@@ -376,7 +376,7 @@ public class PurchaseAdderView extends VerticalLayout {
         Authentication authentication = VaadinSession.getCurrent().getAttribute(Authentication.class);
         String userEmail = authentication.getName();
 
-        return userService.getUserByEmail(userEmail)
+        return userServiceImpl.getByEmail(userEmail)
                 .orElseThrow(() -> new UsernameNotFoundException("Nie rozpoznano zalogowanego użytkownika!"));
     }
 

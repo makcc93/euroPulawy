@@ -15,11 +15,11 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.balance.BalanceBroadcaster;
-import pl.eurokawa.balance.BalanceServiceImpl;
+import pl.eurokawa.balance.BalanceService;
 import pl.eurokawa.other.DateFormatter;
 import pl.eurokawa.purchase.Purchase;
 import pl.eurokawa.purchase.PurchaseRepository;
-import pl.eurokawa.purchase.PurchaseServiceImpl;
+import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.transaction.Transaction;
@@ -34,8 +34,8 @@ import java.util.List;
 @Menu(order = 3, icon = LineAwesomeIconUrl.CHECK_CIRCLE)
 public class PurchaseConfirmationView extends Div {
 
-    private final PurchaseServiceImpl purchaseServiceImpl;
-    private final BalanceServiceImpl balanceServiceImpl;
+    private final PurchaseService purchaseService;
+    private final BalanceService balanceService;
     private final PurchaseRepository purchaseRepository;
     private final TransactionRepository transactionRepository;
     private final S3Service s3Service;
@@ -43,12 +43,12 @@ public class PurchaseConfirmationView extends Div {
     private final ListDataProvider<Purchase> dataProvider;
     private final DateFormatter dateFormatter;
 
-    public PurchaseConfirmationView(PurchaseServiceImpl purchaseServiceImpl, BalanceServiceImpl balanceServiceImpl, PurchaseRepository purchaseRepository, TransactionRepository transactionRepository, S3Service s3Service, DateFormatter dateFormatter) {
-        this.purchaseServiceImpl = purchaseServiceImpl;
-        this.balanceServiceImpl = balanceServiceImpl;
+    public PurchaseConfirmationView(PurchaseService purchaseService, BalanceService balanceService, PurchaseRepository purchaseRepository, TransactionRepository transactionRepository, S3Service s3Service, DateFormatter dateFormatter) {
+        this.purchaseService = purchaseService;
+        this.balanceService = balanceService;
         this.purchaseRepository = purchaseRepository;
         this.transactionRepository = transactionRepository;
-        this.purchases = purchaseServiceImpl.getSavedNotConfirmedPurchases();
+        this.purchases = purchaseService.getSavedNotConfirmedPurchases();
         this.s3Service = s3Service;
         this.dateFormatter = dateFormatter;
 
@@ -73,7 +73,7 @@ public class PurchaseConfirmationView extends Div {
 
         grid.addColumn(Purchase::getTotal).setHeader("WARTOŚĆ").setWidth("50px");
 
-        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseServiceImpl.getPurchasePhoto(FileType.PHOTO,purchase, s3Service)))
+        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseService.getPurchasePhoto(FileType.PHOTO,purchase, s3Service)))
                 .setHeader("DOWÓD ZAKUPU").setAutoWidth(true);
 
         createActionButtons(grid);
@@ -93,9 +93,9 @@ public class PurchaseConfirmationView extends Div {
 
                 transactionRepository.save(transaction);
 
-                balanceServiceImpl.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
+                balanceService.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
 
-                BalanceBroadcaster.broadcast(balanceServiceImpl.getCurrentBalance());
+                BalanceBroadcaster.broadcast(balanceService.getCurrentBalance());
 
                 purchases.remove(purchase);
                 dataProvider.refreshAll();

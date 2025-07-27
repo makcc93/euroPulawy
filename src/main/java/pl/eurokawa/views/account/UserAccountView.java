@@ -24,7 +24,7 @@ import pl.eurokawa.token.*;
 import pl.eurokawa.user.User;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.email.EmailService;
-import pl.eurokawa.user.UserService;
+import pl.eurokawa.user.UserServiceImpl;
 import pl.eurokawa.views.HomeView;
 import pl.eurokawa.views.layouts.MainLayout;
 import pl.eurokawa.views.layouts.LayoutForDialog;
@@ -35,7 +35,7 @@ import java.util.Optional;
 public class UserAccountView extends Div implements BeforeEnterObserver {
 
     private static final Logger log = LogManager.getLogger(UserAccountView.class);
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final SecurityService securityService;
     private String USER_ID = "userId";
     private final User loggedUser;
@@ -44,8 +44,8 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
     private final TokenService tokenService;
 
 
-    public UserAccountView(UserService userService, SecurityService securityService, EmailService emailService, TokenService tokenService) {
-        this.userService = userService;
+    public UserAccountView(UserServiceImpl userServiceImpl, SecurityService securityService, EmailService emailService, TokenService tokenService) {
+        this.userServiceImpl = userServiceImpl;
         this.securityService = securityService;
         loggedUser = securityService.getLoggedUser();
         this.emailService = emailService;
@@ -81,7 +81,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
            try {
                if (this.loggedUser != null) {
                    binder.writeBean(this.loggedUser);
-                   userService.save(this.loggedUser);
+                   userServiceImpl.save(this.loggedUser);
 
                    UI.getCurrent().navigate(HomeView.class);
 
@@ -181,7 +181,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
                         String userTokenInputValue = layoutForDialog.getTextField().getValue();
 
                         if (tokenInUserEmail.equals(userTokenInputValue)){
-                            userService.setUserNewPassword(user.getEmail(),passwordField.getValue());
+                            userServiceImpl.setUserNewPassword(user.getEmail(),passwordField.getValue());
 
                             tokenDialog.close();
                             mainDialog.close();
@@ -242,7 +242,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
             Token tokenInUserEmail = tokenService.getLastUserTokenByType(user.getId(),TokenType.PASSWORD_RESET);
 
             if (tokenInput.getValue().equals(tokenInUserEmail.getValue())){
-                userService.setUserNewPassword(user.getEmail(), password);
+                userServiceImpl.setUserNewPassword(user.getEmail(), password);
 
                 insideDialog.close();
                 outsideDialog.close();
@@ -268,7 +268,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
         Optional<Integer> userId = event.getRouteParameters().get(USER_ID).map(Integer::parseInt);
 
         if (userId.isPresent()){
-            Optional<User> userFromBackend = userService.get(userId.get());
+            Optional<User> userFromBackend = userServiceImpl.get(userId.get());
             binder.readBean(userFromBackend.get());
         }
     }

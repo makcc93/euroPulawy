@@ -12,7 +12,7 @@ import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.other.DateFormatter;
 import pl.eurokawa.purchase.Purchase;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.purchase.PurchaseServiceImpl;
+import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.user.UserType;
@@ -25,18 +25,18 @@ import java.util.List;
 @Route("orderhistory")
 @Menu(order = 1.1, icon = LineAwesomeIconUrl.GRIP_LINES_SOLID)
 public class PurchaseHistoryView extends Div implements BeforeEnterObserver {
-    private PurchaseServiceImpl purchaseServiceImpl;
+    private PurchaseService purchaseService;
     private final SecurityService securityService;
     private final S3Service s3Service;
     private final DateFormatter dateFormatter;
 
-    public PurchaseHistoryView(PurchaseServiceImpl purchaseServiceImpl, SecurityService securityService, S3Service s3Service, DateFormatter dateFormatter){
-        this.purchaseServiceImpl = purchaseServiceImpl;
+    public PurchaseHistoryView(PurchaseService purchaseService, SecurityService securityService, S3Service s3Service, DateFormatter dateFormatter){
+        this.purchaseService = purchaseService;
         this.securityService = securityService;
         this.s3Service = s3Service;
         this.dateFormatter = dateFormatter;
 
-        List<Purchase> purchases = purchaseServiceImpl.getConfirmedPurchases();
+        List<Purchase> purchases = purchaseService.getConfirmedPurchases();
 
         Grid<Purchase> grid = new Grid<>(Purchase.class,false);grid.setItems(purchases);
         grid.setAllRowsVisible(true);
@@ -56,7 +56,7 @@ public class PurchaseHistoryView extends Div implements BeforeEnterObserver {
 
         grid.addColumn(Purchase::getTotal).setHeader("WARTOŚĆ").setWidth("50px");
 
-        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseServiceImpl.getPurchasePhoto(FileType.PHOTO,purchase, s3Service)))
+        grid.addColumn(new ComponentRenderer<>(purchase -> purchaseService.getPurchasePhoto(FileType.PHOTO,purchase, s3Service)))
                 .setHeader("DOWÓD ZAKUPU").setAutoWidth(true);
 
         add(grid);

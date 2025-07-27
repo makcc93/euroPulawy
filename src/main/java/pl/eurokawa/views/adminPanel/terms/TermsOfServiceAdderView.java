@@ -8,11 +8,10 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
-import pl.eurokawa.file.FileServiceImpl;
+import pl.eurokawa.file.FileService;
 import pl.eurokawa.file.FileType;
 import pl.eurokawa.file.name.NameConversionService;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.terms.TermsOfService;
 import pl.eurokawa.terms.TermsOfServiceRepository;
 
@@ -22,13 +21,13 @@ import java.io.InputStream;
 @RolesAllowed("ADMIN")
 public class TermsOfServiceAdderView extends Div {
 
-    private final FileServiceImpl fileServiceImpl;
+    private final FileService fileService;
     private final SecurityService securityService;
     private final TermsOfServiceRepository termsOfServiceRepository;
     private final NameConversionService nameConversionService;
 
-    public TermsOfServiceAdderView(FileServiceImpl fileServiceImpl, SecurityService securityService, TermsOfServiceRepository termsOfServiceRepository, NameConversionService nameConversionService){
-        this.fileServiceImpl = fileServiceImpl;
+    public TermsOfServiceAdderView(FileService fileService, SecurityService securityService, TermsOfServiceRepository termsOfServiceRepository, NameConversionService nameConversionService){
+        this.fileService = fileService;
         this.securityService = securityService;
         this.termsOfServiceRepository = termsOfServiceRepository;
         this.nameConversionService = nameConversionService;
@@ -64,7 +63,7 @@ public class TermsOfServiceAdderView extends Div {
                 TermsOfService termsOfService = new TermsOfService(secureFileName,securityService.getLoggedUser());
                 termsOfServiceRepository.save(termsOfService);
 
-                fileServiceImpl.uploadFile(FileType.TERMS,inputStream,secureFileName);
+                fileService.uploadFile(FileType.TERMS,inputStream,secureFileName);
                 Notification.show("Regulamin dodany prawidlowo",5000, Notification.Position.BOTTOM_CENTER);
 
                 upload.setVisible(false);

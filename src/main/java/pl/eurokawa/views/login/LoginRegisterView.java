@@ -35,10 +35,11 @@ import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.terms.TermsOfServiceRepository;
 import pl.eurokawa.terms.TermsOfServiceService;
 import pl.eurokawa.token.*;
+import pl.eurokawa.user.DTO.RegisterUserRequest;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserRepository;
 import pl.eurokawa.views.layouts.EmptyLayout;
-import pl.eurokawa.user.UserService;
+import pl.eurokawa.user.UserServiceImpl;
 import org.apache.commons.validator.routines.EmailValidator;
 import pl.eurokawa.views.layouts.LayoutForDialog;
 
@@ -51,7 +52,7 @@ import java.util.Optional;
 @RouteAlias(value = "register",layout = EmptyLayout.class)
 public class LoginRegisterView extends Div {
     private final AuthenticationManager authenticationManager;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final UserRepository userRepository;
     private static final Logger logger = LogManager.getLogger(LoginRegisterView.class);
     private final PasswordValidator passwordValidator;
@@ -62,9 +63,9 @@ public class LoginRegisterView extends Div {
     private final S3Config s3Config;
     private final TokenService tokenService;
 
-    public LoginRegisterView(AuthenticationManager authenticationManager, UserService userService, UserRepository userRepository, PasswordValidator passwordValidator, EmailService emailService, TermsOfServiceRepository termsOfServiceRepository, TermsOfServiceService termsOfServiceService, S3Service s3Service, S3Config s3Config, TokenService tokenService) {
+    public LoginRegisterView(AuthenticationManager authenticationManager, UserServiceImpl userServiceImpl, UserRepository userRepository, PasswordValidator passwordValidator, EmailService emailService, TermsOfServiceRepository termsOfServiceRepository, TermsOfServiceService termsOfServiceService, S3Service s3Service, S3Config s3Config, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
         this.userRepository = userRepository;
         this.passwordValidator = passwordValidator;
         this.emailService = emailService;
@@ -176,7 +177,14 @@ public class LoginRegisterView extends Div {
             String confirmPassword = confirmPasswordField.getValue();
 
             if (validateRegistration(firstName,lastName,email,password,confirmPassword)){
-                User registeredUser = userService.registerUser(firstName, lastName, email, password);
+                RegisterUserRequest registerUserRequest = RegisterUserRequest.builder()
+                                .firstName(firstName)
+                                .lastName(lastName)
+                                .email(email)
+                                .password(password)
+                                .build();
+
+                User registeredUser = userServiceImpl.registerUser(registerUserRequest);
                 Token token = tokenService.generateToken(registeredUser, TokenType.REGISTRATION);
 
                 emailService.sendEmailConfirmationLink(registeredUser.getEmail(),token.getValue());
@@ -245,7 +253,7 @@ public class LoginRegisterView extends Div {
             return false;
         };
 
-        if (userService.getUserByEmail(email).isPresent()){
+        if (userServiceImpl.getByEmail(email).isPresent()){
             Notification.show("Użytkownik z podanym mailem już istnieje!",5000, Notification.Position.BOTTOM_CENTER);
 
             return false;
@@ -403,7 +411,7 @@ public class LoginRegisterView extends Div {
                     String emailTokenValue = tokenService.getLastUserTokenByType(userByEmail.orElseThrow().getId(),TokenType.PASSWORD_RESET).getValue();
 
                     if (inputValue.equals(emailTokenValue)) {
-                        userService.setUserNewPassword(email, password);
+                        userServiceImpl.setUserNewPassword(email, password);
 
                         tokenDialog.close();
                         dialog.close();

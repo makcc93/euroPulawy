@@ -30,7 +30,7 @@ import pl.eurokawa.email.EmailService;
 import pl.eurokawa.token.*;
 import pl.eurokawa.transaction.TransactionRepository;
 import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserService;
+import pl.eurokawa.user.UserServiceImpl;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserType;
 import pl.eurokawa.views.layouts.MainLayout;
@@ -66,16 +66,16 @@ public class UserView extends Div implements BeforeEnterObserver {
 
     private final BeanValidationBinder<User> binder;
     private User user;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final TransactionRepository transactionRepository;
     private final PurchaseRepository purchaseRepository;
     private final UserRepository userRepository;
 
-    public UserView(SecurityService securityService, TokenService tokenService, EmailService emailService, UserService userService, TransactionRepository transactionRepository, PurchaseRepository purchaseRepository, UserRepository userRepository) {
+    public UserView(SecurityService securityService, TokenService tokenService, EmailService emailService, UserServiceImpl userServiceImpl, TransactionRepository transactionRepository, PurchaseRepository purchaseRepository, UserRepository userRepository) {
         this.securityService = securityService;
         this.tokenService = tokenService;
         this.emailService = emailService;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
         this.transactionRepository = transactionRepository;
         this.purchaseRepository = purchaseRepository;
         this.userRepository = userRepository;
@@ -114,7 +114,7 @@ public class UserView extends Div implements BeforeEnterObserver {
             try {
                 if (this.user != null) {
                     binder.writeBean(this.user);
-                    userService.save(this.user);
+                    userServiceImpl.save(this.user);
 
                     refreshGrid();
                     clearForm();
@@ -168,7 +168,7 @@ public class UserView extends Div implements BeforeEnterObserver {
                     } catch (ValidationException ex) {
                         throw new RuntimeException(ex);
                     }
-                    userService.delete(this.user.getId());
+                    userServiceImpl.delete(this.user.getId());
                     clearForm();
                     refreshGrid();
 
@@ -238,7 +238,7 @@ public class UserView extends Div implements BeforeEnterObserver {
         emailConfirmed.setItemLabelGenerator(value -> value ? "Tak" : "Nie");
 
         Button emailSender = new Button("Wyślij ponownie link aktywacyjny",event ->{
-            if (!userService.getUserByEmail(email.getValue()).orElseThrow().getEmailConfirmed()) {
+            if (!userServiceImpl.getByEmail(email.getValue()).orElseThrow().getEmailConfirmed()) {
                 Token token = tokenService.generateToken(userRepository.findUserByEmail(email.getValue()).orElseThrow(), TokenType.REGISTRATION);
                 emailService.sendEmailConfirmationLink(email.getValue(), token.getValue());
 
@@ -304,7 +304,7 @@ public class UserView extends Div implements BeforeEnterObserver {
         Optional<Integer> peopleId = event.getRouteParameters().get(PEOPLE_ID).map(Integer::parseInt);
 
         if (peopleId.isPresent()) {
-            Optional<User> peopleFromBackend = userService.get(peopleId.get());
+            Optional<User> peopleFromBackend = userServiceImpl.get(peopleId.get());
 
             if (peopleFromBackend.isPresent()) {
                 grid.select(peopleFromBackend.get());

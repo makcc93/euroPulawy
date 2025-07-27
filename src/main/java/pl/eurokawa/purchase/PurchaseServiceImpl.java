@@ -13,11 +13,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import pl.eurokawa.product.Product;
 import pl.eurokawa.product.ProductService;
+import pl.eurokawa.purchase.DTO.CreatePurchaseRequest;
 import pl.eurokawa.security.S3Config;
 import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.user.User;
-import pl.eurokawa.views.purchase.DTO.CreatePurchaseRequest;
 
 import java.util.List;
 
@@ -53,7 +53,7 @@ public class PurchaseServiceImpl implements PurchaseService{
         purchaseRepository.save(purchase);
     }
 
-
+    @Override
     public List<Purchase> getConfirmedPurchases(){
 
         return purchaseRepository.findAllConfirmedPurchases();

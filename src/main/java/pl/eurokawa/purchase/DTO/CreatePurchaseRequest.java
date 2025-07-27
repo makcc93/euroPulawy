@@ -1,4 +1,4 @@
-package pl.eurokawa.views.purchase.DTO;
+package pl.eurokawa.purchase.DTO;
 
 import org.springframework.lang.Nullable;
 

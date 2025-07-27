@@ -25,7 +25,7 @@ import pl.eurokawa.transaction.TransactionRepository;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserService;
+import pl.eurokawa.user.UserServiceImpl;
 import pl.eurokawa.user.UserType;
 
 import java.math.BigDecimal;
@@ -42,7 +42,7 @@ public class DepositAdderView extends VerticalLayout implements BeforeEnterObser
     private final SecurityService securityService;
     private final ProductService productService;
     private final PurchaseRepository purchaseRepository;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
     private final UserRepository userRepository;
 //    private MoneyService moneyService;
 //    private final MoneyRepository moneyRepository;
@@ -51,13 +51,13 @@ public class DepositAdderView extends VerticalLayout implements BeforeEnterObser
     private final List<Transaction> transactions = new ArrayList<>();
 
     public DepositAdderView(TransactionRepository transactionRepository, SecurityService securityService, ProductService productService,
-                            PurchaseRepository purchaseRepository, UserService userService,
+                            PurchaseRepository purchaseRepository, UserServiceImpl userServiceImpl,
                             UserRepository userRepository) {
         this.transactionRepository = transactionRepository;
         this.securityService = securityService;
         this.productService = productService;
         this.purchaseRepository = purchaseRepository;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
         this.userRepository = userRepository;
         dataProvider = new ListDataProvider<>(transactions);
 

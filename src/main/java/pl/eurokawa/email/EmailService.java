@@ -8,7 +8,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserService;
+import pl.eurokawa.user.UserServiceImpl;
 import pl.eurokawa.user.UserType;
 
 import java.util.ArrayList;
@@ -19,13 +19,13 @@ public class EmailService {
     private static final Logger log = LogManager.getLogger(EmailService.class);
     private final JavaMailSender javaMailSender;
     private final String fromAddress;
-    private final UserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     public EmailService(JavaMailSender javaMailSender,
-                        @Value("${spring.mail.username}") String fromAddress, UserService userService, UserRepository userRepository){
+                        @Value("${spring.mail.username}") String fromAddress, UserServiceImpl userServiceImpl, UserRepository userRepository){
         this.javaMailSender = javaMailSender;
         this.fromAddress = fromAddress;
-        this.userService = userService;
+        this.userServiceImpl = userServiceImpl;
     }
 
     public void sendSixNumbersCode(String to,String code){
@@ -41,7 +41,7 @@ public class EmailService {
     }
 
     public void sendEmailConfirmationLink(String to, String token){
-        String userId = String.valueOf(userService.getUserByEmail(to).orElseThrow().getId());
+        String userId = String.valueOf(userServiceImpl.getByEmail(to).orElseThrow().getId());
         String web = "http://europulawy.pl/users/" + userId +"/emailConfirmation/" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -78,7 +78,7 @@ public class EmailService {
         }
 
         List<User> admins = new ArrayList<>();
-        for (User singleUser : userService.getAll()){
+        for (User singleUser : userServiceImpl.getAll()){
             if (singleUser.getRole().equals(UserType.ADMIN.name())){
                 admins.add(singleUser);
             }

@@ -2,9 +2,9 @@ package pl.eurokawa.purchase;
 
 import com.vaadin.flow.component.Component;
 import pl.eurokawa.file.FileType;
+import pl.eurokawa.purchase.DTO.CreatePurchaseRequest;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.user.User;
-import pl.eurokawa.views.purchase.DTO.CreatePurchaseRequest;
 
 import java.util.List;
 
@@ -15,4 +15,5 @@ public interface PurchaseService {
     List<Purchase> findAllConfirmedPurchases();
     List<Purchase> findUserConfirmedPurchases(Integer userId);
     List<Purchase> findUserSavedPurchases(Integer userId);
+    List<Purchase> getConfirmedPurchases();
 }

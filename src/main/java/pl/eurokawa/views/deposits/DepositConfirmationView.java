@@ -16,7 +16,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.balance.BalanceBroadcaster;
-import pl.eurokawa.balance.BalanceServiceImpl;
+import pl.eurokawa.balance.BalanceService;
 import pl.eurokawa.other.DateFormatter;
 import pl.eurokawa.transaction.Transaction;
 import pl.eurokawa.transaction.TransactionRepository;
@@ -33,13 +33,13 @@ public class DepositConfirmationView extends Div {
     private List<Transaction> notConfirmedTransactions = new ArrayList<>();
     private final TransactionRepository transactionRepository;
     private final DateFormatter dateFormatter;
-    private final BalanceServiceImpl balanceServiceImpl;
+    private final BalanceService balanceService;
 
-    public DepositConfirmationView(TransactionRepository transactionRepository, DateFormatter dateFormatter, BalanceServiceImpl balanceServiceImpl){
+    public DepositConfirmationView(TransactionRepository transactionRepository, DateFormatter dateFormatter, BalanceService balanceService){
         this.transactionRepository = transactionRepository;
         this.notConfirmedTransactions = transactionRepository.findAllSavedNotConfirmedTransactions();
         this.dateFormatter = dateFormatter;
-        this.balanceServiceImpl = balanceServiceImpl;
+        this.balanceService = balanceService;
 
         dataProvider = new ListDataProvider<>(notConfirmedTransactions);
         grid = new Grid<>(Transaction.class,false);
@@ -68,9 +68,9 @@ public class DepositConfirmationView extends Div {
 
                 transactionRepository.save(transaction);
 
-                balanceServiceImpl.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
+                balanceService.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
 
-                BalanceBroadcaster.broadcast(balanceServiceImpl.getCurrentBalance());
+                BalanceBroadcaster.broadcast(balanceService.getCurrentBalance());
 
                 notConfirmedTransactions.remove(transaction);
 
