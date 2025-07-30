@@ -18,7 +18,7 @@ import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.terms.TermsOfService;
 import pl.eurokawa.terms.TermsOfServiceRepository;
-import pl.eurokawa.terms.TermsOfServiceService;
+import pl.eurokawa.terms.TermsOfServiceServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +28,15 @@ public class TermsOfServiceListView extends Div {
     private static final Logger log = LoggerFactory.getLogger(TermsOfServiceListView.class);
     private final TermsOfServiceRepository termsOfServiceRepository;
     private final DateFormatter dateFormatter;
-    private final TermsOfServiceService termsOfServiceService;
+    private final TermsOfServiceServiceImpl termsOfServiceServiceImpl;
     private List<TermsOfService> termsOfServiceList = new ArrayList<>();
     private final S3Service s3Service;
     private final ListDataProvider<TermsOfService> dataProvider;
 
-    public TermsOfServiceListView(TermsOfServiceRepository termsOfServiceRepository, DateFormatter dateFormatter, TermsOfServiceService termsOfServiceService, S3Service s3Service){
+    public TermsOfServiceListView(TermsOfServiceRepository termsOfServiceRepository, DateFormatter dateFormatter, TermsOfServiceServiceImpl termsOfServiceServiceImpl, S3Service s3Service){
         this.termsOfServiceRepository = termsOfServiceRepository;
         this.dateFormatter = dateFormatter;
-        this.termsOfServiceService = termsOfServiceService;
+        this.termsOfServiceServiceImpl = termsOfServiceServiceImpl;
         this.termsOfServiceList = termsOfServiceRepository.termsOfServiceList();
         this.s3Service = s3Service;
 
@@ -59,7 +59,7 @@ public class TermsOfServiceListView extends Div {
         grid.addColumn(TermsOfService::getFileName).setHeader("SZYFROWANA NAZWA").setAutoWidth(true);
         grid.addColumn(new ComponentRenderer<>(termsOfService -> new Span(dateFormatter.formatToEuropeWarsaw(String.valueOf(termsOfService.getCreatedAt())))))
                 .setHeader("DATA DODANIA").setAutoWidth(true);
-        grid.addColumn(new ComponentRenderer<>(termsOfService -> termsOfServiceService.getTermsOfServiceLink(FileType.TERMS,termsOfService, s3Service))).setHeader("PODGLĄD REGULAMINU").setAutoWidth(true);
+        grid.addColumn(new ComponentRenderer<>(termsOfService -> termsOfServiceServiceImpl.getTermsOfServiceLink(FileType.TERMS,termsOfService, s3Service))).setHeader("PODGLĄD REGULAMINU").setAutoWidth(true);
         createIsActualColumn(grid);
         createActionButtons(grid,termsOfServiceRepository);
     }

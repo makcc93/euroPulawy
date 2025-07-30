@@ -19,7 +19,7 @@ import pl.eurokawa.balance.BalanceBroadcaster;
 import pl.eurokawa.balance.BalanceService;
 import pl.eurokawa.other.DateFormatter;
 import pl.eurokawa.transaction.Transaction;
-import pl.eurokawa.transaction.TransactionRepository;
+import pl.eurokawa.transaction.TransactionService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,13 +31,13 @@ public class DepositConfirmationView extends Div {
     private final Grid<Transaction> grid;
     private final ListDataProvider<Transaction> dataProvider;
     private List<Transaction> notConfirmedTransactions = new ArrayList<>();
-    private final TransactionRepository transactionRepository;
     private final DateFormatter dateFormatter;
     private final BalanceService balanceService;
+    private final TransactionService transactionService;
 
-    public DepositConfirmationView(TransactionRepository transactionRepository, DateFormatter dateFormatter, BalanceService balanceService){
-        this.transactionRepository = transactionRepository;
-        this.notConfirmedTransactions = transactionRepository.findAllSavedNotConfirmedTransactions();
+    public DepositConfirmationView(DateFormatter dateFormatter, BalanceService balanceService, TransactionService transactionService){
+        this.transactionService = transactionService;
+        this.notConfirmedTransactions = transactionService.findAllSavedNotConfirmedTransactions();
         this.dateFormatter = dateFormatter;
         this.balanceService = balanceService;
 
@@ -66,7 +66,7 @@ public class DepositConfirmationView extends Div {
             save.addClickListener(event ->{
                 transaction.setConfirmed(true);
 
-                transactionRepository.save(transaction);
+                transactionService.save(transaction);
 
                 balanceService.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
 
@@ -83,7 +83,7 @@ public class DepositConfirmationView extends Div {
             delete.addThemeVariants(ButtonVariant.LUMO_ERROR,ButtonVariant.LUMO_CONTRAST);
             delete.setTooltipText("Usuń");
             delete.addClickListener(event ->{
-                transactionRepository.delete(transaction);
+                transactionService.delete(transaction);
 
                 notConfirmedTransactions.remove(transaction);
 

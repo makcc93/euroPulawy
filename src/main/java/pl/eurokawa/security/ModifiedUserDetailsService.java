@@ -21,7 +21,7 @@ public class ModifiedUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findUserByEmail(email)
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Użytkownik nie został znaleziony"));
 
         return new ModifiedUserDetails(user);

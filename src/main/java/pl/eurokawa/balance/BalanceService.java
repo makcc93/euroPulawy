@@ -9,4 +9,5 @@ import java.math.BigDecimal;
 public interface BalanceService {
     void updateBalance(User user, BigDecimal value, TransactionType transactionType);
     BigDecimal getCurrentBalance();
+    Balance findUserLastBalanceOperation(Integer userId);
 }

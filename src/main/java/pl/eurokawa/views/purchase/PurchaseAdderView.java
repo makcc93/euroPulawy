@@ -21,12 +21,10 @@ import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
-import lombok.Data;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.file.FileService;
 import pl.eurokawa.file.FileType;
@@ -37,10 +35,8 @@ import pl.eurokawa.purchase.DTO.CreatePurchaseRequest;
 import pl.eurokawa.purchase.Purchase;
 import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.storage.S3Service;
-import pl.eurokawa.transaction.TransactionRepository;
 import pl.eurokawa.user.User;
-import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserServiceImpl;
+import pl.eurokawa.user.UserService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,18 +44,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
 @PageTitle("Zakupy")
 @Route("order")
 @Menu(order = 1, icon = LineAwesomeIconUrl.SHOPPING_CART_SOLID)
 @EnableConfigurationProperties
 public class PurchaseAdderView extends VerticalLayout {
     private final ProductService productService;
-    private final UserServiceImpl userServiceImpl;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final FileService fileService;
     private final S3Service s3Service;
-    private final TransactionRepository transactionRepository;
     private final NameConversionService nameConversionService;
     private final PurchaseService purchaseService;
 
@@ -72,13 +65,11 @@ public class PurchaseAdderView extends VerticalLayout {
     private final ListDataProvider<Purchase> dataProviderForAddPurchase;
     private final ListDataProvider<Purchase> dataProviderForUserPurchases;
 
-    public PurchaseAdderView(ProductService productService, UserServiceImpl userServiceImpl, UserRepository userRepository, FileService fileService, S3Service s3Service, TransactionRepository transactionRepository, NameConversionService nameConversionService, PurchaseService purchaseService) {
+    public PurchaseAdderView(ProductService productService, UserService userService, FileService fileService, S3Service s3Service, NameConversionService nameConversionService, PurchaseService purchaseService) {
         this.productService = productService;
-        this.userServiceImpl = userServiceImpl;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.fileService = fileService;
         this.s3Service = s3Service;
-        this.transactionRepository = transactionRepository;
         this.nameConversionService = nameConversionService;
         this.purchaseService = purchaseService;
         Component topHeader = firstGridHeader();
@@ -376,8 +367,7 @@ public class PurchaseAdderView extends VerticalLayout {
         Authentication authentication = VaadinSession.getCurrent().getAttribute(Authentication.class);
         String userEmail = authentication.getName();
 
-        return userServiceImpl.getByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("Nie rozpoznano zalogowanego użytkownika!"));
+        return userService.getByEmail(userEmail);
     }
 
     private boolean uploadButtonVisibilityCheck(Purchase purchase){

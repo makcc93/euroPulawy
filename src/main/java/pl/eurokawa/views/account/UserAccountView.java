@@ -20,10 +20,11 @@ import com.vaadin.flow.router.Route;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
+import pl.eurokawa.email.EmailType;
 import pl.eurokawa.token.*;
 import pl.eurokawa.user.User;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.email.EmailService;
+import pl.eurokawa.email.EmailServiceImpl;
 import pl.eurokawa.user.UserServiceImpl;
 import pl.eurokawa.views.HomeView;
 import pl.eurokawa.views.layouts.MainLayout;
@@ -40,15 +41,15 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
     private String USER_ID = "userId";
     private final User loggedUser;
     private final BeanValidationBinder<User> binder;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailServiceImpl;
     private final TokenService tokenService;
 
 
-    public UserAccountView(UserServiceImpl userServiceImpl, SecurityService securityService, EmailService emailService, TokenService tokenService) {
+    public UserAccountView(UserServiceImpl userServiceImpl, SecurityService securityService, EmailServiceImpl emailServiceImpl, TokenService tokenService) {
         this.userServiceImpl = userServiceImpl;
         this.securityService = securityService;
         loggedUser = securityService.getLoggedUser();
-        this.emailService = emailService;
+        this.emailServiceImpl = emailServiceImpl;
         this.tokenService = tokenService;
 
 
@@ -170,7 +171,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
                 if (passwordField.getValue().equals(passwordFieldRepeated.getValue())){
                     Token token = tokenService.generateToken(user, TokenType.PASSWORD_RESET);
 
-                    emailService.sendSixNumbersCode(user.getEmail(), token.getValue());
+                    emailServiceImpl.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, user, token.getValue());
                     Notification.show("Kod autoryzacji wysłano na emaila " + user.getEmail(),3000, Notification.Position.BOTTOM_CENTER);
 
                     Dialog tokenDialog = new Dialog();

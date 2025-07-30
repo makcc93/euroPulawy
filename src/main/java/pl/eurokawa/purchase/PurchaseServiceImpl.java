@@ -59,7 +59,7 @@ public class PurchaseServiceImpl implements PurchaseService{
         return purchaseRepository.findAllConfirmedPurchases();
     }
 
-    // this method breaks SRP rule, need to be refactorized, almost impossible to test
+    // this method breaks SRP rule, needs to be refactorized, almost impossible to test
     @Override
     public Component getPurchasePhoto(FileType fileType,Purchase purchase, S3Service s3Service){
         String folder = fileType.getFolder();

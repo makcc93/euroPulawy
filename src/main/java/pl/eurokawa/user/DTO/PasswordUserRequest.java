@@ -4,9 +4,11 @@ import lombok.*;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 public class PasswordUserRequest {
     private String password;
+
+    private PasswordUserRequest(){}
+
+    public static
 }

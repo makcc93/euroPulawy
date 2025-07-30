@@ -14,7 +14,8 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.eurokawa.email.EmailService;
+import pl.eurokawa.email.EmailServiceImpl;
+import pl.eurokawa.email.EmailType;
 import pl.eurokawa.product.Product;
 import pl.eurokawa.product.ProductService;
 import pl.eurokawa.security.SecurityService;
@@ -31,13 +32,13 @@ public class ProductManagerViewSOLID extends Div {
     private final Grid<Product> grid = new Grid<>(Product.class,false);
     private final ListDataProvider<Product> dataProvider;
     private final SecurityService securityService;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailServiceImpl;
     private final ProductService productService;
     private final TokenService tokenService;
 
-    public ProductManagerViewSOLID(SecurityService securityService, EmailService emailService, ProductService productService, TokenService tokenService){
+    public ProductManagerViewSOLID(SecurityService securityService, EmailServiceImpl emailServiceImpl, ProductService productService, TokenService tokenService){
         this.securityService = securityService;
-        this.emailService = emailService;
+        this.emailServiceImpl = emailServiceImpl;
         this.productService = productService;
 
         dataProvider = new ListDataProvider<>(productService.getAllProducts());
@@ -126,7 +127,7 @@ public class ProductManagerViewSOLID extends Div {
                 User user = securityService.getLoggedUser();
 
                 Token token = tokenService.generateToken(user, TokenType.DELETE);
-                emailService.sendSixNumbersCode(user.getEmail(),token.getValue());
+                emailServiceImpl.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, user, token.getValue());
 
                 Dialog dialog = new Dialog();
                 LayoutForDialog layoutForDialog = new LayoutForDialog("USUWANIE PRODUKTU: " + product.getName(), "W celu usunięcia towaru wprowadź kod autoryzacji z emaila");

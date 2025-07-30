@@ -28,22 +28,18 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import pl.eurokawa.email.EmailType;
 import pl.eurokawa.security.PasswordValidator;
-import pl.eurokawa.email.EmailService;
+import pl.eurokawa.email.EmailServiceImpl;
 import pl.eurokawa.security.S3Config;
 import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
-import pl.eurokawa.terms.TermsOfServiceRepository;
 import pl.eurokawa.terms.TermsOfServiceService;
 import pl.eurokawa.token.*;
 import pl.eurokawa.user.DTO.RegisterUserRequest;
 import pl.eurokawa.user.User;
-import pl.eurokawa.user.UserRepository;
 import pl.eurokawa.views.layouts.EmptyLayout;
-import pl.eurokawa.user.UserServiceImpl;
+import pl.eurokawa.user.UserService;
 import org.apache.commons.validator.routines.EmailValidator;
 import pl.eurokawa.views.layouts.LayoutForDialog;
-
-import java.util.Optional;
 
 
 @AnonymousAllowed
@@ -52,24 +48,20 @@ import java.util.Optional;
 @RouteAlias(value = "register",layout = EmptyLayout.class)
 public class LoginRegisterView extends Div {
     private final AuthenticationManager authenticationManager;
-    private final UserServiceImpl userServiceImpl;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private static final Logger logger = LogManager.getLogger(LoginRegisterView.class);
     private final PasswordValidator passwordValidator;
-    private final EmailService emailService;
-    private final TermsOfServiceRepository termsOfServiceRepository;
+    private final EmailServiceImpl emailServiceImpl;
     private final TermsOfServiceService termsOfServiceService;
     private final S3Service s3Service;
     private final S3Config s3Config;
     private final TokenService tokenService;
 
-    public LoginRegisterView(AuthenticationManager authenticationManager, UserServiceImpl userServiceImpl, UserRepository userRepository, PasswordValidator passwordValidator, EmailService emailService, TermsOfServiceRepository termsOfServiceRepository, TermsOfServiceService termsOfServiceService, S3Service s3Service, S3Config s3Config, TokenService tokenService) {
+    public LoginRegisterView(AuthenticationManager authenticationManager, UserService userService, PasswordValidator passwordValidator, EmailServiceImpl emailServiceImpl, TermsOfServiceService termsOfServiceService, S3Service s3Service, S3Config s3Config, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
-        this.userServiceImpl = userServiceImpl;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.passwordValidator = passwordValidator;
-        this.emailService = emailService;
-        this.termsOfServiceRepository = termsOfServiceRepository;
+        this.emailServiceImpl = emailServiceImpl;
         this.termsOfServiceService = termsOfServiceService;
         this.s3Service = s3Service;
         this.s3Config = s3Config;
@@ -121,7 +113,7 @@ public class LoginRegisterView extends Div {
 
         VerticalLayout loginPanel = createLoginView();
         Div divider = divider();
-        VerticalLayout registerPanel = createRegisterView(emailService);
+        VerticalLayout registerPanel = createRegisterView(emailServiceImpl);
 
         layout.add(loginPanel,divider,registerPanel);
 
@@ -141,7 +133,7 @@ public class LoginRegisterView extends Div {
     }
 
 
-    private VerticalLayout createRegisterView(EmailService emailService) {
+    private VerticalLayout createRegisterView(EmailServiceImpl emailServiceImpl) {
         VerticalLayout registerPanel = new VerticalLayout();
         registerPanel.setPadding(true);
         registerPanel.setWidth("450px");
@@ -184,10 +176,10 @@ public class LoginRegisterView extends Div {
                                 .password(password)
                                 .build();
 
-                User registeredUser = userServiceImpl.registerUser(registerUserRequest);
+                User registeredUser = userService.registerUser(registerUserRequest);
                 Token token = tokenService.generateToken(registeredUser, TokenType.REGISTRATION);
 
-                emailService.sendEmailConfirmationLink(registeredUser.getEmail(),token.getValue());
+                emailServiceImpl.sendEmailConfirmationLink(EmailType.EMAIL_CONFIRMATION,registeredUser,token.getValue());
 
                 Notification.show("Rejestracja udana!\n Na Twoją skrzynkę email" + registeredUser.getEmail() + " został wysłany link aktywacyjny.",
                         5000, Notification.Position.MIDDLE);
@@ -197,7 +189,7 @@ public class LoginRegisterView extends Div {
 
                 Token accountConfirmationToken = tokenService.generateToken(registeredUser,TokenType.ACCOUNT_CONFIRMATION);
 
-                emailService.sendEmailNotificationToAdmins(EmailType.NEW_USER_REGISTER,registeredUser, accountConfirmationToken.getValue());
+                emailServiceImpl.sendEmailNotificationToAdmins(EmailType.NEW_USER_REGISTER,registeredUser, accountConfirmationToken.getValue());
             }
         });
         registerButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
@@ -210,7 +202,7 @@ public class LoginRegisterView extends Div {
         termsAndConditions.addClickListener(checkboxClickEvent -> {
             registerButton.setEnabled(termsAndConditions.getValue());
         });
-        termsAndConditions.setLabelComponent(termsOfServiceService.getTermsOfServiceLink(FileType.TERMS,termsOfServiceRepository.findCurrentActual(), s3Service,"Zapoznałem się z regulaminem serwisu"));
+        termsAndConditions.setLabelComponent(termsOfServiceService.getTermsOfServiceLink(FileType.TERMS, termsOfServiceService.findCurrentActual(), s3Service,"Zapoznałem się z regulaminem serwisu"));
 
         FormLayout registerForm = new FormLayout();
         registerForm.add(firstNameField,lastNameField,emailField,passwordField,confirmPasswordField,registerButton,termsAndConditions);
@@ -253,7 +245,7 @@ public class LoginRegisterView extends Div {
             return false;
         };
 
-        if (userServiceImpl.getByEmail(email).isPresent()){
+        if (userService.getAll().contains(userService.getByEmail(email))){
             Notification.show("Użytkownik z podanym mailem już istnieje!",5000, Notification.Position.BOTTOM_CENTER);
 
             return false;
@@ -295,7 +287,7 @@ public class LoginRegisterView extends Div {
     }
 
     private boolean nameIsValid(String name){
-        if (name.matches("^[A-Za-z-']+$")){
+        if (name.matches("^[A-Za-z-']śćńźżóąę+$")){
             return true;
         };
 
@@ -330,19 +322,7 @@ public class LoginRegisterView extends Div {
     }
 
     private void configureLoginForm(LoginForm loginForm){
-        LoginI18n i18n = new LoginI18n();
-        LoginI18n.Form form = new LoginI18n.Form();
-
-        form.setUsername("Email");
-        form.setPassword("Hasło");
-        form.setSubmit("Zaloguj się");
-        form.setForgotPassword("Nie pamiętasz hasła?");
-        i18n.setForm(form);
-
-        LoginI18n.ErrorMessage errorMessage = new LoginI18n.ErrorMessage();
-        errorMessage.setTitle("Błąd");
-        errorMessage.setMessage("Sprawdź poprawność danych.");
-        i18n.setErrorMessage(errorMessage);
+        LoginI18n i18n = getLoginI18n();
 
         loginForm.setI18n(i18n);
         loginForm.addLoginListener(event -> {
@@ -358,6 +338,23 @@ public class LoginRegisterView extends Div {
         loginForm.addForgotPasswordListener(event -> {
             setNewPassword();
         });
+    }
+
+    private static LoginI18n getLoginI18n() {
+        LoginI18n i18n = new LoginI18n();
+        LoginI18n.Form form = new LoginI18n.Form();
+
+        form.setUsername("Email");
+        form.setPassword("Hasło");
+        form.setSubmit("Zaloguj się");
+        form.setForgotPassword("Nie pamiętasz hasła?");
+        i18n.setForm(form);
+
+        LoginI18n.ErrorMessage errorMessage = new LoginI18n.ErrorMessage();
+        errorMessage.setTitle("Błąd");
+        errorMessage.setMessage("Sprawdź poprawność danych.");
+        i18n.setErrorMessage(errorMessage);
+        return i18n;
     }
 
     private void setNewPassword(){
@@ -377,10 +374,10 @@ public class LoginRegisterView extends Div {
             String email = emailField.getValue();
             String password = newPasswordField.getValue();
             String repeatedPassword = repeatedNewPasswordField.getValue();
-            Optional<User> userByEmail = userRepository.findUserByEmail(email);
+            User userByEmail = userService.getByEmail(email);
 
             if (!passwordValidator.doPasswordsMatch(password,repeatedPassword)){
-                Notification.show("Hasła do siebie nie pasują!\nSpróbuj ponownie.",5000, Notification.Position.BOTTOM_CENTER);
+                Notification.show("Hasła do siebie nie pasują!\nSpróbuj ponownie.",3000, Notification.Position.BOTTOM_CENTER);
 
                 return;
             };
@@ -391,13 +388,13 @@ public class LoginRegisterView extends Div {
                 return;
             }
 
-            if (userByEmail.isEmpty()){
+            if (!userService.getAll().contains(userByEmail)){
                 Notification.show("Użytkownik o podanym emailu " + email + " nie istnieje!\nSpróbuj ponownie lub zarejestruj się.",5000, Notification.Position.BOTTOM_CENTER);
             }
             else {
-                Token token = tokenService.generateToken(userByEmail.orElseThrow(), TokenType.PASSWORD_RESET);
+                Token token = tokenService.generateToken(userByEmail, TokenType.PASSWORD_RESET);
 
-                emailService.sendSixNumbersCode(email,token.getValue());
+                emailServiceImpl.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, userByEmail, token.getValue());
 
                 Notification.show("Kod autoryzacji wysłano na emaila " + email,3000, Notification.Position.TOP_CENTER);
 
@@ -408,16 +405,16 @@ public class LoginRegisterView extends Div {
 
                 layoutForDialog.getSaveButton().addClickListener(saveEvent ->{
                     String inputValue = layoutForDialog.getTextField().getValue();
-                    String emailTokenValue = tokenService.getLastUserTokenByType(userByEmail.orElseThrow().getId(),TokenType.PASSWORD_RESET).getValue();
+                    String emailTokenValue = tokenService.getLastUserTokenByType(userByEmail.getId(),TokenType.PASSWORD_RESET).getValue();
 
                     if (inputValue.equals(emailTokenValue)) {
-                        userServiceImpl.setUserNewPassword(email, password);
+                        userService.setUserNewPassword(email, password);
 
                         tokenDialog.close();
                         dialog.close();
 
                         Notification.show("Gratulacje!\nHasło zmienione poprawnie.", 3000, Notification.Position.BOTTOM_CENTER);
-                        logger.info("UserAccount, changeUserPassword, Zmiana hasła dla {}", userByEmail.orElseThrow());
+                        logger.info("UserAccount, changeUserPassword, Zmiana hasła dla {}", userByEmail);
                     }
                     else{
                         Notification.show("Błędny kod autoryzacji! Spróbuj ponownie.",3000, Notification.Position.BOTTOM_CENTER);

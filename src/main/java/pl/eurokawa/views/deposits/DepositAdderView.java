@@ -15,7 +15,6 @@ import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
-import lombok.Data;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.product.ProductService;
 import pl.eurokawa.purchase.PurchaseRepository;
@@ -24,8 +23,7 @@ import pl.eurokawa.transaction.Transaction;
 import pl.eurokawa.transaction.TransactionRepository;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
-import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserServiceImpl;
+import pl.eurokawa.user.UserService;
 import pl.eurokawa.user.UserType;
 
 import java.math.BigDecimal;
@@ -33,7 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @UIScope
-@Data
 @PageTitle("Wpłaty")
 @Route("deposit")
 @Menu(order = 2, icon = LineAwesomeIconUrl.DOLLAR_SIGN_SOLID)
@@ -42,45 +39,23 @@ public class DepositAdderView extends VerticalLayout implements BeforeEnterObser
     private final SecurityService securityService;
     private final ProductService productService;
     private final PurchaseRepository purchaseRepository;
-    private final UserServiceImpl userServiceImpl;
-    private final UserRepository userRepository;
-//    private MoneyService moneyService;
-//    private final MoneyRepository moneyRepository;
+    private final UserService userService;
     private final Grid<Transaction> grid;
     private final ListDataProvider<Transaction> dataProvider;
     private final List<Transaction> transactions = new ArrayList<>();
 
     public DepositAdderView(TransactionRepository transactionRepository, SecurityService securityService, ProductService productService,
-                            PurchaseRepository purchaseRepository, UserServiceImpl userServiceImpl,
-                            UserRepository userRepository) {
+                            PurchaseRepository purchaseRepository, UserService userService) {
         this.transactionRepository = transactionRepository;
         this.securityService = securityService;
         this.productService = productService;
         this.purchaseRepository = purchaseRepository;
-        this.userServiceImpl = userServiceImpl;
-        this.userRepository = userRepository;
+        this.userService = userService;
         dataProvider = new ListDataProvider<>(transactions);
 
         grid = new Grid<> (Transaction.class,false);
         grid.setDataProvider(dataProvider);
         grid.setAllRowsVisible(true);
-//        grid.setVisible(securityService.loggedUserHasRole("ADMIN"));
-        
-//        if (!securityService.loggedUserHasRole("ADMIN")){
-//
-//            TextArea information = new TextArea();
-//            information.setValue("""
-//            Nie posiadasz dostępu do dodawania wpłat, aby zobaczyć ich historię przejdź do zakładki niżej \"Historia wpłat\".
-//            Jeśli dokonałeś wpłaty, ale jej nie widzisz zgłoś ten fakt skarbnikowi.
-//            """);
-//            information.setWidthFull();
-//            information.setAutofocus(true);
-//            information.setHeightFull();
-//            information.setReadOnly(true);
-//            information.getStyle().set("font-size","48px");
-//
-//            add(information);
-//        }
 
         createUserColumn(grid);
         createDepositColumn(grid);
@@ -110,7 +85,7 @@ public class DepositAdderView extends VerticalLayout implements BeforeEnterObser
                 comboBox.setReadOnly(true);
             }
             else {
-                comboBox.setItems(userRepository.findOnlyConfirmedUsers());
+                comboBox.setItems(userService.findOnlyConfirmedUsers());
                 comboBox.setReadOnly(false);
             }
 

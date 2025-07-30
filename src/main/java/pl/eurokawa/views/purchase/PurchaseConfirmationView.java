@@ -23,7 +23,7 @@ import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.file.FileType;
 import pl.eurokawa.storage.S3Service;
 import pl.eurokawa.transaction.Transaction;
-import pl.eurokawa.transaction.TransactionRepository;
+import pl.eurokawa.transaction.TransactionService;
 import pl.eurokawa.transaction.TransactionType;
 
 import java.util.ArrayList;
@@ -37,17 +37,17 @@ public class PurchaseConfirmationView extends Div {
     private final PurchaseService purchaseService;
     private final BalanceService balanceService;
     private final PurchaseRepository purchaseRepository;
-    private final TransactionRepository transactionRepository;
+    private final TransactionService transactionService;
     private final S3Service s3Service;
     private List<Purchase> purchases = new ArrayList<>();
     private final ListDataProvider<Purchase> dataProvider;
     private final DateFormatter dateFormatter;
 
-    public PurchaseConfirmationView(PurchaseService purchaseService, BalanceService balanceService, PurchaseRepository purchaseRepository, TransactionRepository transactionRepository, S3Service s3Service, DateFormatter dateFormatter) {
+    public PurchaseConfirmationView(PurchaseService purchaseService, BalanceService balanceService, PurchaseRepository purchaseRepository, TransactionService transactionService, S3Service s3Service, DateFormatter dateFormatter) {
         this.purchaseService = purchaseService;
         this.balanceService = balanceService;
         this.purchaseRepository = purchaseRepository;
-        this.transactionRepository = transactionRepository;
+        this.transactionService = transactionService;
         this.purchases = purchaseService.getSavedNotConfirmedPurchases();
         this.s3Service = s3Service;
         this.dateFormatter = dateFormatter;
@@ -91,7 +91,7 @@ public class PurchaseConfirmationView extends Div {
                 purchaseRepository.save(purchase);
                 Transaction transaction = new Transaction(purchase.getUser(), TransactionType.CHECKOUT,purchase.getTotal());
 
-                transactionRepository.save(transaction);
+                transactionService.save(transaction);
 
                 balanceService.updateBalance(transaction.getUser(),transaction.getAmount(),transaction.getType());
 

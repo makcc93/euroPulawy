@@ -1,6 +1,5 @@
 package pl.eurokawa.balance;
 
-import org.hibernate.sql.ast.tree.expression.Over;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.eurokawa.transaction.TransactionType;
@@ -37,5 +36,11 @@ public class BalanceServiceImpl implements BalanceService{
         return Optional.ofNullable(balanceRepository.findLastBalanceValue())
                 .map(Balance::getAmount)
                 .orElse(BigDecimal.ZERO);
+    }
+
+    @Override
+    public Balance findUserLastBalanceOperation(Integer userId) {
+        return balanceRepository.findUserLastBalanceOperation(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Cannot find user last balance record by his id: " + userId));
     }
 }

@@ -43,7 +43,7 @@ public class SecurityService {
             ModifiedUserDetails user = (ModifiedUserDetails) authentication.getPrincipal();
 
             String email = user.getUsername();
-            User userByEmail = userRepository.findUserByEmail(email)
+            User userByEmail = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("Nie mogę znaleźć zalogowanego użytkownika"));
 
             String firstName = userByEmail.getFirstName();

@@ -12,7 +12,8 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import pl.eurokawa.balance.*;
-import pl.eurokawa.email.EmailService;
+import pl.eurokawa.email.EmailServiceImpl;
+import pl.eurokawa.email.EmailType;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.token.*;
 import pl.eurokawa.transaction.TransactionType;
@@ -25,15 +26,15 @@ import java.math.BigDecimal;
 @Route("manual-balance-setter")
 public class BalanceManualSetterView extends Div {
     private final SecurityService securityService;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailServiceImpl;
     private TextField newBalance;
     private final TokenService tokenService;
     private final BalanceService balanceService;
 
-    public BalanceManualSetterView(SecurityService securityService, EmailService emailService, TokenService tokenService, BalanceService balanceService){
+    public BalanceManualSetterView(SecurityService securityService, EmailServiceImpl emailServiceImpl, TokenService tokenService, BalanceService balanceService){
 
         this.securityService = securityService;
-        this.emailService = emailService;
+        this.emailServiceImpl = emailServiceImpl;
         this.tokenService = tokenService;
         this.balanceService = balanceService;
 
@@ -94,7 +95,7 @@ public class BalanceManualSetterView extends Div {
             User loggedUser = securityService.getLoggedUser();
             Token token = tokenService.generateToken(loggedUser, TokenType.BALANCE_SETTER);
 
-            emailService.sendSixNumbersCode(loggedUser.getEmail(),token.getValue());
+            emailServiceImpl.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, loggedUser, token.getValue());
 
             layoutForDialog.getSaveButton().addClickListener(confirm ->{
                 if (layoutForDialog.getTextField().getValue().equals(token.getValue())){

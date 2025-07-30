@@ -10,9 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
-    Optional<User> findUserByEmail(String email);
+    Optional<User> findByEmail(String email);
 
-    Optional<User> findUserById(Integer id);
+    Optional<User> findById(Integer id);
 
     @Query("SELECT u FROM User u WHERE  u.role != 'NOTCONFIRMED'")
     List<User> findOnlyConfirmedUsers();

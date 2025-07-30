@@ -50,7 +50,7 @@ public class EmailConfirmationController {
             return ResponseEntity.badRequest().build();
         }
 
-        User userById = userRepository.findUserById(userId).orElseThrow();
+        User userById = userRepository.findById(userId).orElseThrow();
         log.info("Controller: admin-account-confirmation, user = {}",userById);
         log.info("Controller: admin-account-confirmation, role = {}",userById.getRole());
 

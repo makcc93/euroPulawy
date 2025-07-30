@@ -24,13 +24,12 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
-import pl.eurokawa.purchase.PurchaseRepository;
+import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.email.EmailService;
+import pl.eurokawa.email.EmailServiceImpl;
 import pl.eurokawa.token.*;
-import pl.eurokawa.transaction.TransactionRepository;
-import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserServiceImpl;
+import pl.eurokawa.transaction.TransactionService;
+import pl.eurokawa.user.UserService;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserType;
 import pl.eurokawa.views.layouts.MainLayout;
@@ -46,7 +45,7 @@ public class UserView extends Div implements BeforeEnterObserver {
 
     private final SecurityService securityService;
     private final TokenService tokenService;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailServiceImpl;
     private static final Logger logger = LogManager.getLogger(UserView.class);
 
     private String PEOPLE_ID = "peopleID";
@@ -66,19 +65,17 @@ public class UserView extends Div implements BeforeEnterObserver {
 
     private final BeanValidationBinder<User> binder;
     private User user;
-    private final UserServiceImpl userServiceImpl;
-    private final TransactionRepository transactionRepository;
-    private final PurchaseRepository purchaseRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final TransactionService transactionService;
+    private final PurchaseService purchaseService;
 
-    public UserView(SecurityService securityService, TokenService tokenService, EmailService emailService, UserServiceImpl userServiceImpl, TransactionRepository transactionRepository, PurchaseRepository purchaseRepository, UserRepository userRepository) {
+    public UserView(SecurityService securityService, TokenService tokenService, EmailServiceImpl emailServiceImpl, UserService userService, TransactionService transactionService, PurchaseService purchaseService) {
         this.securityService = securityService;
         this.tokenService = tokenService;
-        this.emailService = emailService;
-        this.userServiceImpl = userServiceImpl;
-        this.transactionRepository = transactionRepository;
-        this.purchaseRepository = purchaseRepository;
-        this.userRepository = userRepository;
+        this.emailServiceImpl = emailServiceImpl;
+        this.userService = userService;
+        this.transactionService = transactionService;
+        this.purchaseService = purchaseService;
 
         addClassNames("ludzie-view");
         // Create UI
@@ -114,7 +111,7 @@ public class UserView extends Div implements BeforeEnterObserver {
             try {
                 if (this.user != null) {
                     binder.writeBean(this.user);
-                    userServiceImpl.save(this.user);
+                    userService.save(this.user);
 
                     refreshGrid();
                     clearForm();
@@ -145,8 +142,8 @@ public class UserView extends Div implements BeforeEnterObserver {
 
         delete.addClickListener(e -> {
             if (this.user != null
-                    && purchaseRepository.findUserConfirmedPurchases(this.user.getId()).isEmpty()
-                    && (transactionRepository.findAllUserConfirmedTransactions(this.user.getId()).isEmpty()))
+                    && purchaseService.findUserConfirmedPurchases(this.user.getId()).isEmpty()
+                    && (transactionService.findAllUserConfirmedTransactions(this.user.getId()).isEmpty()))
             {
 
                 ConfirmDialog deleteConfirmDialog = new ConfirmDialog();
@@ -161,14 +158,14 @@ public class UserView extends Div implements BeforeEnterObserver {
                 deleteConfirmDialog.setConfirmText("Potwierdź");
                 deleteConfirmDialog.addConfirmListener(event ->{
                     logger.info(",,,, delete, this user = {}", this.user.toString());
-                    logger.info(",,,, delete, isEmpty = {}, sum = {}",purchaseRepository.findUserConfirmedPurchases(this.user.getId()).isEmpty(),transactionRepository.getSumOfUserDeposit(this.user.getId()));
+                    logger.info(",,,, delete, isEmpty = {}, sum = {}",purchaseService.findUserConfirmedPurchases(this.user.getId()).isEmpty(),transactionService.getSumOfUserDeposit(this.user.getId()));
 
                     try {
                         binder.writeBean(this.user);
                     } catch (ValidationException ex) {
                         throw new RuntimeException(ex);
                     }
-                    userServiceImpl.delete(this.user.getId());
+                    userService.delete(this.user.getId());
                     clearForm();
                     refreshGrid();
 
@@ -190,16 +187,16 @@ public class UserView extends Div implements BeforeEnterObserver {
         grid.addColumn("firstName").setAutoWidth(true).setHeader("IMIĘ");
         grid.addColumn("lastName").setAutoWidth(true).setHeader("NAZWISKO");
         grid.addColumn(user -> {
-            BigDecimal sum = transactionRepository.getSumOfUserDeposit(user.getId());
+            BigDecimal sum = transactionService.getSumOfUserDeposit(user.getId());
 
             return sum != null ? String.format("%.2f", sum) : "0.00";
         }).setAutoWidth(true).setHeader("SUMA WPŁAT");
 
         if (securityService.loggedUserHasRole(UserType.ADMIN.name())){
-            grid.setItems(userRepository.findAll());
+            grid.setItems(userService.findAll());
         }
         else {
-            grid.setItems(userRepository.findOnlyConfirmedUsers());
+            grid.setItems(userService.findOnlyConfirmedUsers());
         }
         grid.addThemeVariants(GridVariant.LUMO_WRAP_CELL_CONTENT);
     }
@@ -238,9 +235,9 @@ public class UserView extends Div implements BeforeEnterObserver {
         emailConfirmed.setItemLabelGenerator(value -> value ? "Tak" : "Nie");
 
         Button emailSender = new Button("Wyślij ponownie link aktywacyjny",event ->{
-            if (!userServiceImpl.getByEmail(email.getValue()).orElseThrow().getEmailConfirmed()) {
-                Token token = tokenService.generateToken(userRepository.findUserByEmail(email.getValue()).orElseThrow(), TokenType.REGISTRATION);
-                emailService.sendEmailConfirmationLink(email.getValue(), token.getValue());
+            if (!userService.getByEmail(email.getValue()).getEmailConfirmed()) {
+                Token token = tokenService.generateToken(userService.getByEmail(email.getValue()), TokenType.REGISTRATION);
+                emailServiceImpl.sendEmailConfirmationLink(email.getValue(), token.getValue());
 
                 Notification.show("Wysłano link potwierdzający e-mail dla " + firstName.getValue() + " " + lastName.getValue(), 5000, Position.BOTTOM_CENTER);
             } else {
@@ -304,11 +301,11 @@ public class UserView extends Div implements BeforeEnterObserver {
         Optional<Integer> peopleId = event.getRouteParameters().get(PEOPLE_ID).map(Integer::parseInt);
 
         if (peopleId.isPresent()) {
-            Optional<User> peopleFromBackend = userServiceImpl.get(peopleId.get());
+            User peopleFromBackend = userService.getById(peopleId.get());
 
-            if (peopleFromBackend.isPresent()) {
-                grid.select(peopleFromBackend.get());
-                populateForm(peopleFromBackend.get());
+            if (userService.getAll().contains(peopleFromBackend)) {
+                grid.select(peopleFromBackend);
+                populateForm(peopleFromBackend);
             } else {
                 Notification.show(String.format("The requested user was not found, ID = %s", peopleId.get()), 3000,
                         Notification.Position.BOTTOM_START);
