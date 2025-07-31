@@ -24,9 +24,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
+import pl.eurokawa.email.EmailType;
 import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.email.EmailServiceImpl;
+import pl.eurokawa.email.EmailService;
 import pl.eurokawa.token.*;
 import pl.eurokawa.transaction.TransactionService;
 import pl.eurokawa.user.UserService;
@@ -45,7 +46,7 @@ public class UserView extends Div implements BeforeEnterObserver {
 
     private final SecurityService securityService;
     private final TokenService tokenService;
-    private final EmailServiceImpl emailServiceImpl;
+    private final EmailService emailService;
     private static final Logger logger = LogManager.getLogger(UserView.class);
 
     private String PEOPLE_ID = "peopleID";
@@ -69,10 +70,10 @@ public class UserView extends Div implements BeforeEnterObserver {
     private final TransactionService transactionService;
     private final PurchaseService purchaseService;
 
-    public UserView(SecurityService securityService, TokenService tokenService, EmailServiceImpl emailServiceImpl, UserService userService, TransactionService transactionService, PurchaseService purchaseService) {
+    public UserView(SecurityService securityService, TokenService tokenService, EmailService emailService, UserService userService, TransactionService transactionService, PurchaseService purchaseService) {
         this.securityService = securityService;
         this.tokenService = tokenService;
-        this.emailServiceImpl = emailServiceImpl;
+        this.emailService = emailService;
         this.userService = userService;
         this.transactionService = transactionService;
         this.purchaseService = purchaseService;
@@ -235,16 +236,17 @@ public class UserView extends Div implements BeforeEnterObserver {
         emailConfirmed.setItemLabelGenerator(value -> value ? "Tak" : "Nie");
 
         Button emailSender = new Button("Wyślij ponownie link aktywacyjny",event ->{
-            if (!userService.getByEmail(email.getValue()).getEmailConfirmed()) {
+            User user = userService.getByEmail(email.getValue());
+
+            if (!user.getEmailConfirmed()) {
                 Token token = tokenService.generateToken(userService.getByEmail(email.getValue()), TokenType.REGISTRATION);
-                emailServiceImpl.sendEmailConfirmationLink(email.getValue(), token.getValue());
+                emailService.sendEmailConfirmationLink(EmailType.EMAIL_CONFIRMATION,user, token.getValue());
 
                 Notification.show("Wysłano link potwierdzający e-mail dla " + firstName.getValue() + " " + lastName.getValue(), 5000, Position.BOTTOM_CENTER);
             } else {
                 Notification.show("Email użytkownika " + firstName.getValue() + " " + lastName.getValue() + " został już potwierdzony.", 5000, Position.BOTTOM_CENTER);
             }
         });
-
 
         formLayout.add(firstName, lastName, email,role,isCoffeeMember,emailConfirmed,emailSender);
 

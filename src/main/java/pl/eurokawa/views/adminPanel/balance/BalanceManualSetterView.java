@@ -105,7 +105,7 @@ public class BalanceManualSetterView extends Div {
 
                     newBalance.setValue(changedBalance.toString());
 
-                    balanceService.updateBalance(loggedUser,newValue, TransactionType.MANUAL);
+                    balanceService.updateBalance(loggedUser,newValue,TransactionType.MANUAL);
 
                     BalanceBroadcaster.broadcast(balanceService.getCurrentBalance());
 

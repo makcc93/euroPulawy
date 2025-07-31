@@ -62,24 +62,6 @@ public class SecurityService {
         Authentication authentication = VaadinSession.getCurrent().getAttribute(Authentication.class);
         String userEmail = authentication.getName();
 
-        return userServiceImpl.getByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("Nie rozpoznano zalogowanego użytkownika!"));
+        return userServiceImpl.getByEmail(userEmail);
     }
-
-//    public User getLoggedUser(){
-//        Authentication authentication = VaadinSession.getCurrent().getAttribute(Authentication.class);
-//
-//        if (authentication != null || authentication.getPrincipal() instanceof ModifiedUserDetails){
-//            ModifiedUserDetails user = (ModifiedUserDetails) authentication.getPrincipal();
-//
-//            String email = user.getUsername();
-//            User userByEmail = userRepository.findUserByEmail(email)
-//                    .orElseThrow(() -> new RuntimeException("Nie mogę znaleźć zalogowanego użytkownika"));
-//
-//            return userByEmail;
-//        }
-//
-//        return new User();
-//
-//    }
 }

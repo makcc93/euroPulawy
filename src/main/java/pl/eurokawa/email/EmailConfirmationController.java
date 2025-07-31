@@ -9,31 +9,28 @@ import org.springframework.web.bind.annotation.*;
 import pl.eurokawa.token.TokenService;
 import pl.eurokawa.token.TokenType;
 import pl.eurokawa.user.User;
-import pl.eurokawa.user.UserRepository;
-import pl.eurokawa.user.UserServiceImpl;
+import pl.eurokawa.user.UserService;
 import pl.eurokawa.user.UserType;
 
 @RestController
 public class EmailConfirmationController {
     private static final Logger log = LogManager.getLogger(EmailConfirmationController.class);
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
     private final TokenService tokenService;
-    private final UserRepository userRepository;
 
-    public EmailConfirmationController(UserServiceImpl userServiceImpl, TokenService tokenService, UserRepository userRepository) {
-        this.userServiceImpl = userServiceImpl;
+    public EmailConfirmationController(UserService userService, TokenService tokenService) {
+        this.userService = userService;
         this.tokenService = tokenService;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/users/{id}/emailConfirmation/{token}")
     public ResponseEntity<String> confirmUserEmail(@PathVariable Integer id,@PathVariable String token){
-        User user = userServiceImpl.getUserById(id);
+        User user = userService.getById(id);
         String userLastRegistrationToken = tokenService.getLastUserTokenByType(user.getId(), TokenType.REGISTRATION).getValue();
 
         if (userLastRegistrationToken.equals(token)) {
             user.setEmailConfirmed(true);
-            userRepository.save(user);
+            userService.save(user);
 
             log.info("mail potwierdzony dla {}, a uzyty token = {}", user.getEmail(), token);
             return ResponseEntity.ok("Twój email został poprawnie potwierdzony!");
@@ -50,13 +47,13 @@ public class EmailConfirmationController {
             return ResponseEntity.badRequest().build();
         }
 
-        User userById = userRepository.findById(userId).orElseThrow();
+        User userById = userService.getById(userId);
         log.info("Controller: admin-account-confirmation, user = {}",userById);
         log.info("Controller: admin-account-confirmation, role = {}",userById.getRole());
 
         userById.setRole(UserType.USER.name());
         log.info("Controller: admin-account-confirmation, role after= {}, test .name = {}",userById.getRole(),UserType.USER.name());
-        userRepository.save(userById);
+        userService.save(userById);
 
         return ResponseEntity.ok("Konto zostało poprawnie potwierdzone!");
     }

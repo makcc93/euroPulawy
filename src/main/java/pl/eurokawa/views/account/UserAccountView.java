@@ -24,8 +24,8 @@ import pl.eurokawa.email.EmailType;
 import pl.eurokawa.token.*;
 import pl.eurokawa.user.User;
 import pl.eurokawa.security.SecurityService;
-import pl.eurokawa.email.EmailServiceImpl;
-import pl.eurokawa.user.UserServiceImpl;
+import pl.eurokawa.email.EmailService;
+import pl.eurokawa.user.UserService;
 import pl.eurokawa.views.HomeView;
 import pl.eurokawa.views.layouts.MainLayout;
 import pl.eurokawa.views.layouts.LayoutForDialog;
@@ -36,20 +36,20 @@ import java.util.Optional;
 public class UserAccountView extends Div implements BeforeEnterObserver {
 
     private static final Logger log = LogManager.getLogger(UserAccountView.class);
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
     private final SecurityService securityService;
     private String USER_ID = "userId";
     private final User loggedUser;
     private final BeanValidationBinder<User> binder;
-    private final EmailServiceImpl emailServiceImpl;
+    private final EmailService emailService;
     private final TokenService tokenService;
 
 
-    public UserAccountView(UserServiceImpl userServiceImpl, SecurityService securityService, EmailServiceImpl emailServiceImpl, TokenService tokenService) {
-        this.userServiceImpl = userServiceImpl;
+    public UserAccountView(UserService userService, SecurityService securityService, EmailService emailService, TokenService tokenService) {
+        this.userService = userService;
         this.securityService = securityService;
         loggedUser = securityService.getLoggedUser();
-        this.emailServiceImpl = emailServiceImpl;
+        this.emailService = emailService;
         this.tokenService = tokenService;
 
 
@@ -82,7 +82,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
            try {
                if (this.loggedUser != null) {
                    binder.writeBean(this.loggedUser);
-                   userServiceImpl.save(this.loggedUser);
+                   userService.save(this.loggedUser);
 
                    UI.getCurrent().navigate(HomeView.class);
 
@@ -171,7 +171,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
                 if (passwordField.getValue().equals(passwordFieldRepeated.getValue())){
                     Token token = tokenService.generateToken(user, TokenType.PASSWORD_RESET);
 
-                    emailServiceImpl.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, user, token.getValue());
+                    emailService.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, user, token.getValue());
                     Notification.show("Kod autoryzacji wysłano na emaila " + user.getEmail(),3000, Notification.Position.BOTTOM_CENTER);
 
                     Dialog tokenDialog = new Dialog();
@@ -182,7 +182,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
                         String userTokenInputValue = layoutForDialog.getTextField().getValue();
 
                         if (tokenInUserEmail.equals(userTokenInputValue)){
-                            userServiceImpl.setUserNewPassword(user.getEmail(),passwordField.getValue());
+                            userService.setUserNewPassword(user.getEmail(),passwordField.getValue());
 
                             tokenDialog.close();
                             mainDialog.close();
@@ -243,7 +243,7 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
             Token tokenInUserEmail = tokenService.getLastUserTokenByType(user.getId(),TokenType.PASSWORD_RESET);
 
             if (tokenInput.getValue().equals(tokenInUserEmail.getValue())){
-                userServiceImpl.setUserNewPassword(user.getEmail(), password);
+                userService.setUserNewPassword(user.getEmail(), password);
 
                 insideDialog.close();
                 outsideDialog.close();
@@ -269,8 +269,8 @@ public class UserAccountView extends Div implements BeforeEnterObserver {
         Optional<Integer> userId = event.getRouteParameters().get(USER_ID).map(Integer::parseInt);
 
         if (userId.isPresent()){
-            Optional<User> userFromBackend = userServiceImpl.get(userId.get());
-            binder.readBean(userFromBackend.get());
+            User userFromBackend = userService.getById(userId.get());
+            binder.readBean(userFromBackend);
         }
     }
 }

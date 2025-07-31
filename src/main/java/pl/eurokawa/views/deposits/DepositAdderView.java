@@ -17,10 +17,10 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.product.ProductService;
-import pl.eurokawa.purchase.PurchaseRepository;
+import pl.eurokawa.purchase.PurchaseService;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.transaction.Transaction;
-import pl.eurokawa.transaction.TransactionRepository;
+import pl.eurokawa.transaction.TransactionService;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserService;
@@ -35,24 +35,24 @@ import java.util.List;
 @Route("deposit")
 @Menu(order = 2, icon = LineAwesomeIconUrl.DOLLAR_SIGN_SOLID)
 public class DepositAdderView extends VerticalLayout implements BeforeEnterObserver {
-    private final TransactionRepository transactionRepository;
     private final SecurityService securityService;
     private final ProductService productService;
-    private final PurchaseRepository purchaseRepository;
     private final UserService userService;
     private final Grid<Transaction> grid;
     private final ListDataProvider<Transaction> dataProvider;
     private final List<Transaction> transactions = new ArrayList<>();
+    private final PurchaseService purchaseService;
+    private final TransactionService transactionService;
 
-    public DepositAdderView(TransactionRepository transactionRepository, SecurityService securityService, ProductService productService,
-                            PurchaseRepository purchaseRepository, UserService userService) {
-        this.transactionRepository = transactionRepository;
+    public DepositAdderView(SecurityService securityService, ProductService productService,
+                            UserService userService, PurchaseService purchaseService, TransactionService transactionService) {
         this.securityService = securityService;
         this.productService = productService;
-        this.purchaseRepository = purchaseRepository;
+        this.purchaseService = purchaseService;
         this.userService = userService;
-        dataProvider = new ListDataProvider<>(transactions);
+        this.transactionService = transactionService;
 
+        dataProvider = new ListDataProvider<>(transactions);
         grid = new Grid<> (Transaction.class,false);
         grid.setDataProvider(dataProvider);
         grid.setAllRowsVisible(true);
@@ -140,7 +140,7 @@ public class DepositAdderView extends VerticalLayout implements BeforeEnterObser
                 transaction.setType(TransactionType.DEPOSIT);
                 transaction.setSaved(true);
                 transaction.setConfirmed(false);
-                transactionRepository.save(transaction);
+                transactionService.save(transaction);
 
                 Notification.show("Twoja wpłata została poprawnie zarejestrowana.",3000, Notification.Position.MIDDLE);
 
@@ -154,7 +154,7 @@ public class DepositAdderView extends VerticalLayout implements BeforeEnterObser
             reset.setTooltipText("Resetuj");
 
             reset.addClickListener(event ->{
-                transactionRepository.delete(transaction);
+                transactionService.delete(transaction);
                 transactions.remove(transaction);
 
                 refreshGrid(grid);

@@ -52,6 +52,7 @@ public class ProductManagerViewSOLID extends Div {
         addProductButton.setIcon(VaadinIcon.PLUS_SQUARE_O.create());
         addProductButton.addThemeVariants(ButtonVariant.LUMO_LARGE);
         addProductButton.setTooltipText("Dodaj nowy produkt");
+
         addNewProductDialog(addProductButton,grid);
 
         add(grid,addProductButton);
@@ -63,20 +64,8 @@ public class ProductManagerViewSOLID extends Div {
             LayoutForDialog layoutForDialog = new LayoutForDialog("DODAWANIE NOWEGO PRODUKTU", "Wprowadź nazwę nowego produktu");
             dialog.add(layoutForDialog);
 
-            layoutForDialog.getSaveButton().addClickListener(saveEvent ->{
-                String userInputValue = layoutForDialog.getTextField().getValue();
-
-                if (userInputValue != null) {
-                    productService.create(userInputValue);
-                    Notification.show("Produkt: " + userInputValue + " został poprawnie dodany", 5000, Notification.Position.MIDDLE);
-                    dialog.close();
-                }
-                else {
-                    Notification.show("Wprowadź nazwę dodawanego produktu",5000, Notification.Position.MIDDLE);
-                }
-
-                refreshGrid(grid,productService);
-            });
+            layoutForDialog.getSaveButton().addClickListener(saveEvent ->
+                    onNewProductSaveButtonClick(layoutForDialog,dialog));
 
             layoutForDialog.getCancelButton().addClickListener(cancelEvent ->{
                 dialog.close();
@@ -98,57 +87,11 @@ public class ProductManagerViewSOLID extends Div {
         grid.addColumn(new ComponentRenderer<>(product -> {
             Button edit = new Button();
             edit.setIcon(VaadinIcon.TOOLS.create());
-            edit.addClickListener(editClick ->{
-                Dialog dialog = new Dialog();
-                LayoutForDialog layoutForDialog = new LayoutForDialog("EDYCJA PRODUKTU: " + product.getName(), "Edytuj nazwę produktu");
-                dialog.add(layoutForDialog);
-
-                layoutForDialog.getTextField().setValue(product.getName());
-
-                layoutForDialog.getSaveButton().addClickListener(saveClick ->{
-                    product.setName(layoutForDialog.getTextField().getValue());
-                    productService.save(product);
-
-                    Notification.show("Poprawnie zmieniono nazwę produktu",5000, Notification.Position.MIDDLE);
-                    dialog.close();
-                    refreshGrid(grid,productService);
-                });
-
-                layoutForDialog.getCancelButton().addClickListener(cancelClick -> {
-                    dialog.close();
-                });
-
-                dialog.open();
-            });
+            edit.addClickListener(editClick -> onEditButtonClick(product));
 
             Button delete = new Button();
             delete.setIcon(VaadinIcon.TRASH.create());
-            delete.addClickListener(deleteClick ->{
-                User user = securityService.getLoggedUser();
-
-                Token token = tokenService.generateToken(user, TokenType.DELETE);
-                emailServiceImpl.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, user, token.getValue());
-
-                Dialog dialog = new Dialog();
-                LayoutForDialog layoutForDialog = new LayoutForDialog("USUWANIE PRODUKTU: " + product.getName(), "W celu usunięcia towaru wprowadź kod autoryzacji z emaila");
-                dialog.add(layoutForDialog);
-
-                layoutForDialog.getSaveButton().addClickListener(saveClick ->{
-                    if (layoutForDialog.getTextField().getValue().equals(token.getValue())){
-                        productService.delete(product);
-
-                        Notification.show("Produkt poprawnie usunięty",5000, Notification.Position.MIDDLE);
-                        dialog.close();
-                    }
-                    else {
-                        Notification.show("Błędy kod autoryzacji",5000, Notification.Position.MIDDLE);
-                    }
-
-                    refreshGrid(grid,productService);
-                });
-
-                dialog.open();
-            });
+            delete.addClickListener(deleteClick -> onDeleteButtonClick(product));
 
             HorizontalLayout layout = new HorizontalLayout();
             layout.add(edit,delete);
@@ -156,6 +99,56 @@ public class ProductManagerViewSOLID extends Div {
             return layout;
         })).setHeader("Akcje").setAutoWidth(true);
         refreshGrid(grid,productService);
+    }
+
+    private void onDeleteButtonClick(Product product) {
+        User user = securityService.getLoggedUser();
+
+        Token token = tokenService.generateToken(user, TokenType.DELETE);
+        emailServiceImpl.sendSixNumbersCode(EmailType.SIX_DIGIT_CODE, user, token.getValue());
+
+        Dialog dialog = new Dialog();
+        LayoutForDialog layoutForDialog = new LayoutForDialog("USUWANIE PRODUKTU: " + product.getName(), "W celu usunięcia towaru wprowadź kod autoryzacji z emaila");
+        dialog.add(layoutForDialog);
+
+        layoutForDialog.getSaveButton().addClickListener(saveClick ->{
+            if (layoutForDialog.getTextField().getValue().equals(token.getValue())){
+                productService.delete(product);
+
+                Notification.show("Produkt poprawnie usunięty",5000, Notification.Position.MIDDLE);
+                dialog.close();
+            }
+            else {
+                Notification.show("Błędy kod autoryzacji",5000, Notification.Position.MIDDLE);
+            }
+
+            refreshGrid(grid,productService);
+        });
+
+        dialog.open();
+    }
+
+    private void onEditButtonClick(Product product) {
+        Dialog dialog = new Dialog();
+        LayoutForDialog layoutForDialog = new LayoutForDialog("EDYCJA PRODUKTU: " + product.getName(), "Edytuj nazwę produktu");
+        dialog.add(layoutForDialog);
+
+        layoutForDialog.getTextField().setValue(product.getName());
+
+        layoutForDialog.getSaveButton().addClickListener(saveClick ->{
+            product.setName(layoutForDialog.getTextField().getValue());
+            productService.save(product);
+
+            Notification.show("Poprawnie zmieniono nazwę produktu",5000, Notification.Position.MIDDLE);
+            dialog.close();
+            refreshGrid(grid,productService);
+        });
+
+        layoutForDialog.getCancelButton().addClickListener(cancelClick -> {
+            dialog.close();
+        });
+
+        dialog.open();
     }
 
     private void refreshGrid(Grid<Product> grid,ProductService productService) {
@@ -169,6 +162,21 @@ public class ProductManagerViewSOLID extends Div {
 
     private void createProductIdColumn(Grid<Product> grid) {
         grid.addColumn(product -> product.getId() != null ? product.getId() : "").setHeader("ID").setAutoWidth(true);
+    }
+
+    private void onNewProductSaveButtonClick(LayoutForDialog layoutForDialog, Dialog dialog){
+        String userInputValue = layoutForDialog.getTextField().getValue();
+
+        if (userInputValue != null) {
+            productService.create(userInputValue);
+            Notification.show("Produkt: " + userInputValue + " został poprawnie dodany", 5000, Notification.Position.MIDDLE);
+            dialog.close();
+        }
+        else {
+            Notification.show("Wprowadź nazwę dodawanego produktu",5000, Notification.Position.MIDDLE);
+        }
+
+        refreshGrid(grid,productService);
     }
 }
 

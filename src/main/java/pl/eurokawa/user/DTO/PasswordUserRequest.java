@@ -1,14 +1,14 @@
 package pl.eurokawa.user.DTO;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 public class PasswordUserRequest {
     private String password;
 
-    private PasswordUserRequest(){}
-
-    public static
+    public PasswordUserRequest(String password){
+        this.password = password;
+    }
 }
