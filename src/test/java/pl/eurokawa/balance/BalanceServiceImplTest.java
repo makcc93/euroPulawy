@@ -250,14 +250,4 @@ public class BalanceServiceImplTest {
 
         assertEquals("Cannot find user last balance record by his id: 1",exception.getMessage());
     }
-    /*
-   @Override
-    public Balance findUserLastBalanceOperation(Integer userId) {
-        Objects.requireNonNull(userId,"User ID cannot be null");
-
-        return balanceRepository.findUserLastBalanceOperation(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Cannot find user last balance record by his id: " + userId));
-    }
-     */
-
 }

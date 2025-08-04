@@ -14,7 +14,7 @@ public class CheckoutBalanceStrategy implements BalanceStrategy{
 
     @Override
     public BigDecimal generateNewBalanceValue(BigDecimal currentBalance, BigDecimal transactionValue) {
-        InputNullChecker.check(currentBalance,transactionValue);
+        BigDecimalNullChecker.check(currentBalance,transactionValue);
         NegativeValueChecker.check(transactionValue);
 
         return currentBalance.subtract(transactionValue);

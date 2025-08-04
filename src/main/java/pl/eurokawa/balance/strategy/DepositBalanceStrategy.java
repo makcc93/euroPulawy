@@ -9,12 +9,14 @@ import java.math.BigDecimal;
 public class DepositBalanceStrategy implements BalanceStrategy{
     @Override
     public boolean supports(TransactionType transactionType) {
+        TransactionTypeNullChecker.check(transactionType);
+
         return transactionType == TransactionType.DEPOSIT;
     }
 
     @Override
     public BigDecimal generateNewBalanceValue(BigDecimal currentBalance, BigDecimal transactionValue) {
-        InputNullChecker.check(currentBalance,transactionValue);
+        BigDecimalNullChecker.check(currentBalance,transactionValue);
         NegativeValueChecker.check(transactionValue);
 
         return currentBalance.add(transactionValue);

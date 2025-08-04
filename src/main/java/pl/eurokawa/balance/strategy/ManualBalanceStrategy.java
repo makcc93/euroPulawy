@@ -14,7 +14,7 @@ public class ManualBalanceStrategy implements BalanceStrategy{
 
     @Override
     public BigDecimal generateNewBalanceValue(BigDecimal currentBalance, BigDecimal transactionValue) {
-        InputNullChecker.check(currentBalance,transactionValue);
+        BigDecimalNullChecker.check(currentBalance,transactionValue);
 
         return transactionValue;
     }
