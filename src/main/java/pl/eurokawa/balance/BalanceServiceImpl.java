@@ -37,7 +37,7 @@ public class BalanceServiceImpl implements BalanceService{
 
     @Override
     public BigDecimal getCurrentBalance() {
-        return Optional.ofNullable(balanceRepository.findLastBalanceValue())
+        return Optional.ofNullable(balanceRepository.findLastBalance())
                 .map(Balance::getAmount)
                 .orElse(BigDecimal.ZERO);
     }
@@ -46,7 +46,7 @@ public class BalanceServiceImpl implements BalanceService{
     public Balance findUserLastBalanceOperation(Integer userId) {
         Objects.requireNonNull(userId,"User ID cannot be null");
 
-        return balanceRepository.findUserLastBalanceOperation(userId)
+        return Optional.ofNullable(balanceRepository.findUserLastBalanceOperation(userId))
                 .orElseThrow(() -> new IllegalArgumentException("Cannot find user last balance record by his id: " + userId));
     }
 

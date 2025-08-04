@@ -1,17 +1,10 @@
 package pl.eurokawa.balance;
 
-import org.apache.commons.validator.Arg;
-import org.checkerframework.checker.units.qual.A;
-import org.junit.jupiter.api.Assertions;
+import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.util.Assert;
 import pl.eurokawa.balance.strategy.BalanceStrategy;
 import pl.eurokawa.balance.strategy.CheckoutBalanceStrategy;
 import pl.eurokawa.balance.strategy.DepositBalanceStrategy;
@@ -20,14 +13,16 @@ import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BalanceServiceImplTest {
-    
+
     @Test
     void updateBalanceByDeposit(){
         User user = mock(User.class);
@@ -194,5 +189,75 @@ public class BalanceServiceImplTest {
 
         assertEquals("TransactionType cannot be null", exception.getMessage());
     }
+
+    @Test
+    void getCurrentBalanceTest(){
+        BigDecimal currentBalance = new BigDecimal("100.00");
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+        when(balanceRepository.findLastBalance()).thenReturn(new Balance(new User(), currentBalance));
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, Collections.emptyList());
+
+        assertEquals(currentBalance,service.getCurrentBalance());
+    }
+
+    @Test
+    void getCurrentBalanceIsNull(){
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        when(balanceRepository.findLastBalance()).thenReturn(null);
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, Collections.emptyList());
+
+        BigDecimal expectedValue = new BigDecimal("0.00");
+
+        assertEquals(0,service.getCurrentBalance().compareTo(expectedValue));
+    }
+
+    @Test
+    void findUserLastBalanceOperation(){
+        User user = mock(User.class);
+        when(user.getId()).thenReturn(123);
+
+        BalanceRepository repository = mock(BalanceRepository.class);
+        Balance balance = new Balance(user,new BigDecimal("111.00"));
+
+        when(repository.findUserLastBalanceOperation(user.getId())).thenReturn(balance);
+
+        BalanceServiceImpl service = new BalanceServiceImpl(repository,Collections.emptyList());
+
+        assertEquals(balance,service.findUserLastBalanceOperation(user.getId()));
+    }
+
+    @Test
+    void findUserLastBalanceOperationUserIdIsNull(){
+        BalanceRepository repository = mock(BalanceRepository.class);
+       BalanceServiceImpl service = new BalanceServiceImpl(repository,Collections.emptyList());
+
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> service.findUserLastBalanceOperation(null));
+
+        assertEquals("User ID cannot be null",exception.getMessage());
+    }
+
+    @Test
+    void findUserLastBalanceOperationUserNotFound(){
+        BalanceRepository repository = mock(BalanceRepository.class);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository,Collections.emptyList());
+
+        when(repository.findUserLastBalanceOperation(1)).thenReturn(null);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.findUserLastBalanceOperation(1));
+
+        assertEquals("Cannot find user last balance record by his id: 1",exception.getMessage());
+    }
+    /*
+   @Override
+    public Balance findUserLastBalanceOperation(Integer userId) {
+        Objects.requireNonNull(userId,"User ID cannot be null");
+
+        return balanceRepository.findUserLastBalanceOperation(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Cannot find user last balance record by his id: " + userId));
+    }
+     */
 
 }

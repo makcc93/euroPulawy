@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface BalanceRepository extends JpaRepository<Balance,Integer>, JpaSpecificationExecutor<Balance> {
 
     @Query(value = "SELECT * FROM balance ORDER BY id DESC LIMIT 1", nativeQuery = true)
-    Balance findLastBalanceValue();
+    Balance findLastBalance();
 
     @Query("SELECT b FROM Balance b WHERE b.user.id = :userId ORDER BY b.id DESC")
-    Optional<Balance> findUserLastBalanceOperation(@Param("userId") Integer userId);
+    Balance findUserLastBalanceOperation(@Param("userId") Integer userId);
 }
