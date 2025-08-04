@@ -12,28 +12,33 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.util.Assert;
+import pl.eurokawa.balance.strategy.BalanceStrategy;
+import pl.eurokawa.balance.strategy.CheckoutBalanceStrategy;
+import pl.eurokawa.balance.strategy.DepositBalanceStrategy;
+import pl.eurokawa.balance.strategy.ManualBalanceStrategy;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BalanceServiceImplTest {
-
-    @Mock
-    BalanceRepository balanceRepository;
-
-    @InjectMocks
-    BalanceServiceImpl balanceServiceImpl;
-
+    
     @Test
     void updateBalanceByDeposit(){
         User user = mock(User.class);
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
-        BalanceServiceImpl spy = spy(balanceServiceImpl);
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
+
         doReturn(new BigDecimal("100.00")).when(spy).getCurrentBalance();
 
         BigDecimal depositValue = new BigDecimal("23.45");
@@ -51,7 +56,13 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalanceByCheckout(){
         User user = mock(User.class);
-        BalanceServiceImpl spy = spy(balanceServiceImpl);
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
 
         BigDecimal checkoutValue = new BigDecimal("90.00");
 
@@ -70,7 +81,13 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalanceByManual(){
         User user = mock(User.class);
-        BalanceServiceImpl spy = spy(balanceServiceImpl);
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
 
         BigDecimal manualValue = new BigDecimal("500.00");
 
@@ -89,31 +106,52 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalanceCheckMinusValueInDeposit(){
         User user = mock(User.class);
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
         BigDecimal minusValue = new BigDecimal("-10.00");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> balanceServiceImpl.updateBalance(user, minusValue, TransactionType.DEPOSIT));
+                () -> spy.updateBalance(user, minusValue, TransactionType.DEPOSIT));
 
-        assertEquals("Value cannot be negative", exception.getMessage());
+        assertEquals("Transaction value cannot be negative", exception.getMessage());
     }
 
     @Test
     void updateBalanceCheckMinusValueInCheckout(){
         User user = mock(User.class);
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
         BigDecimal minusValue = new BigDecimal("-10.00");
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> balanceServiceImpl.updateBalance(user, minusValue, TransactionType.CHECKOUT));
+                () -> spy.updateBalance(user, minusValue, TransactionType.CHECKOUT));
 
-        assertEquals("Value cannot be negative", exception.getMessage());
+        assertEquals("Transaction value cannot be negative", exception.getMessage());
     }
 
     @Test
     void updateBalanceCheckUserIsNull(){
         User user = null;
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
 
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> balanceServiceImpl.updateBalance(user, new BigDecimal("1.00"), TransactionType.MANUAL));
+                () -> spy.updateBalance(user, new BigDecimal("1.00"), TransactionType.MANUAL));
 
         assertEquals("User cannot be null",exception.getMessage());
     }
@@ -123,8 +161,16 @@ public class BalanceServiceImplTest {
         User user = new User();
         BigDecimal value = null;
 
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
+
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> balanceServiceImpl.updateBalance(user, value, TransactionType.MANUAL));
+                () -> spy.updateBalance(user, value, TransactionType.MANUAL));
 
         assertEquals("Value cannot be null", exception.getMessage());
     }
@@ -135,8 +181,16 @@ public class BalanceServiceImplTest {
         BigDecimal value = new BigDecimal("1.00");
         TransactionType transactionType = null;
 
+        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+
+        List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
+
+        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+
+        BalanceServiceImpl spy = spy(service);
+
         NullPointerException exception = assertThrows(NullPointerException.class,
-                () -> balanceServiceImpl.updateBalance(user, value, transactionType));
+                () -> spy.updateBalance(user, value, transactionType));
 
         assertEquals("TransactionType cannot be null", exception.getMessage());
     }

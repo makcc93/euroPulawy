@@ -32,6 +32,7 @@ public class UserServiceImpl implements UserService{
 
         return userRepository.save(user);
     }
+
     @Override
     public void setUserNewPassword (String email, String password){
         User userByEmail = getByEmail(email);
