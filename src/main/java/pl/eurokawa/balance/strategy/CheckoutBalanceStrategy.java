@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 public class CheckoutBalanceStrategy implements BalanceStrategy{
     @Override
     public boolean supports(TransactionType transactionType) {
+        TransactionTypeNullChecker.check(transactionType);
+
         return transactionType == TransactionType.CHECKOUT;
     }
 

@@ -1,23 +1,19 @@
 package pl.eurokawa.balance.strategy;
 
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.transaction.TransactionType;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class DepositBalanceStrategyTest {
 
     @Test
-    void supportsCheck(){
+    void supportsTest(){
         DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
         boolean supports = depositBalanceStrategy.supports(TransactionType.DEPOSIT);
 
@@ -25,7 +21,7 @@ public class DepositBalanceStrategyTest {
     }
 
     @Test
-    void supportsCheckNull(){
+    void supportsTransactionTypeIsNull(){
         DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
 
        assertThrows(NullPointerException.class, () -> depositBalanceStrategy.supports(null));

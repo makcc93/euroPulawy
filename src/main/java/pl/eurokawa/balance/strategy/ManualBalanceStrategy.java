@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 public class ManualBalanceStrategy implements BalanceStrategy{
     @Override
     public boolean supports(TransactionType transactionType) {
+        TransactionTypeNullChecker.check(transactionType);
+
         return transactionType == TransactionType.MANUAL;
     }
 
