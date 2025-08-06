@@ -8,6 +8,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import pl.eurokawa.email.strategy.EmailGeneratorStrategy;
+import pl.eurokawa.exception.ArgumentNullChecker;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserService;
 import pl.eurokawa.user.UserType;
@@ -32,6 +33,10 @@ public class EmailServiceImpl implements EmailService{
 
     @Override
     public void sendSixNumbersCode(EmailType emailType, User user, String code){
+        ArgumentNullChecker.check(emailType,"Email type");
+        ArgumentNullChecker.check(user,"User");
+        ArgumentNullChecker.check(code,"Code");
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(user.getEmail());
@@ -43,6 +48,10 @@ public class EmailServiceImpl implements EmailService{
 
     @Override
     public void sendEmailConfirmationLink(EmailType emailType,User user, String token){
+        ArgumentNullChecker.check(emailType,"Email type");
+        ArgumentNullChecker.check(user,"User");
+        ArgumentNullChecker.check(token,"Token");
+
         String url = "http://europulawy.pl/users/" + user.getId() + "/emailConfirmation/" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
@@ -57,6 +66,10 @@ public class EmailServiceImpl implements EmailService{
 
     @Override
     public void sendEmailNotificationToAdmins (EmailType emailType, User user, String token){
+        ArgumentNullChecker.check(emailType,"Email type");
+        ArgumentNullChecker.check(user,"User");
+        ArgumentNullChecker.check(token,"Token");
+
         String url = "http://europulawy.pl/users/admin-account-confirmation/" + user.getId() + "/" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();

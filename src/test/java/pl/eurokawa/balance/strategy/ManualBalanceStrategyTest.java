@@ -2,7 +2,6 @@ package pl.eurokawa.balance.strategy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.transaction.TransactionType;
 
@@ -11,10 +10,10 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ManualBalanceStrategyTest {
+class ManualBalanceStrategyTest {
 
     @Test
-    void supportsTest(){
+    void supports_WorkingTest(){
         ManualBalanceStrategy manualBalanceStrategy = new ManualBalanceStrategy();
         boolean supports = manualBalanceStrategy.supports(TransactionType.MANUAL);
 
@@ -22,14 +21,14 @@ public class ManualBalanceStrategyTest {
     }
 
     @Test
-    void supportsTransactionTypeIsNull(){
+    void supports_TransactionTypeIsNull(){
         ManualBalanceStrategy manualBalanceStrategy = new ManualBalanceStrategy();
 
         assertThrows(NullPointerException.class, () -> manualBalanceStrategy.supports(null));
     }
 
     @Test
-    void generateNewBalanceValueTest(){
+    void generateNewBalanceValue_WorkingTest(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal manualValue = new BigDecimal("50.00");
 
@@ -40,7 +39,7 @@ public class ManualBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueManualValueIsNegative(){
+    void generateNewBalanceValue_ManualValueIsNegative(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal manualValue = new BigDecimal("-66.00");
 
@@ -51,7 +50,7 @@ public class ManualBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueCurrentValueIsNull(){
+    void generateNewBalanceValue_CurrentValueIsNull(){
         BigDecimal currentBalance = null;
         BigDecimal manualValue = new BigDecimal("10.00");
 
@@ -62,7 +61,7 @@ public class ManualBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueManualValueIsNull(){
+    void generateNewBalanceValue_ManualValueIsNull(){
         BigDecimal currentBalance = new BigDecimal("10.00");
         BigDecimal depositValue = null;
 

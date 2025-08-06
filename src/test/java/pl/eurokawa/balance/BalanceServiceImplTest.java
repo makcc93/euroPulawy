@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 public class BalanceServiceImplTest {
 
     @Test
-    void updateBalanceByDeposit(){
+    void updateBalance_ByDeposit(){
         User user = mock(User.class);
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
@@ -48,7 +48,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void updateBalanceByCheckout(){
+    void updateBalance_ByCheckout(){
         User user = mock(User.class);
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
@@ -73,7 +73,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void updateBalanceByManual(){
+    void updateBalance_ByManual(){
         User user = mock(User.class);
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
@@ -98,7 +98,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void updateBalanceCheckMinusValueInDeposit(){
+    void updateBalance_NegativeValueInDeposit(){
         User user = mock(User.class);
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
@@ -116,7 +116,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void updateBalanceCheckMinusValueInCheckout(){
+    void updateBalance_NegativeValueInCheckout(){
         User user = mock(User.class);
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
@@ -134,7 +134,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void updateBalanceCheckUserIsNull(){
+    void updateBalance_UserIsNull(){
         User user = null;
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
@@ -151,7 +151,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void updateBalanceCheckValueIsNull(){
+    void updateBalance_ValueIsNull(){
         User user = new User();
         BigDecimal value = null;
 
@@ -170,7 +170,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void updateBalanceCheckTransactionTypeIsNull(){
+    void updateBalance_TransactionTypeIsNull(){
         User user = new User();
         BigDecimal value = new BigDecimal("1.00");
         TransactionType transactionType = null;
@@ -190,7 +190,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void getCurrentBalanceTest(){
+    void getCurrentBalance_WorkingTest(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
         when(balanceRepository.findLastBalance()).thenReturn(new Balance(new User(), currentBalance));
@@ -201,7 +201,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void getCurrentBalanceIsNull(){
+    void getCurrentBalance_LastBalanceIsNull(){
         BalanceRepository balanceRepository = mock(BalanceRepository.class);
 
         when(balanceRepository.findLastBalance()).thenReturn(null);
@@ -214,7 +214,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void findUserLastBalanceOperation(){
+    void findUserLastBalanceOperation_WorkingTest(){
         User user = mock(User.class);
         when(user.getId()).thenReturn(123);
 
@@ -229,7 +229,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void findUserLastBalanceOperationUserIdIsNull(){
+    void findUserLastBalanceOperation_UserIdIsNull(){
         BalanceRepository repository = mock(BalanceRepository.class);
        BalanceServiceImpl service = new BalanceServiceImpl(repository,Collections.emptyList());
 
@@ -239,7 +239,7 @@ public class BalanceServiceImplTest {
     }
 
     @Test
-    void findUserLastBalanceOperationUserNotFound(){
+    void findUserLastBalanceOperation_UserNotFound(){
         BalanceRepository repository = mock(BalanceRepository.class);
         BalanceServiceImpl service = new BalanceServiceImpl(repository,Collections.emptyList());
 

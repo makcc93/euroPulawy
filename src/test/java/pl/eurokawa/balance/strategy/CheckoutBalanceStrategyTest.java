@@ -1,23 +1,19 @@
 package pl.eurokawa.balance.strategy;
 
-import org.atmosphere.interceptor.AtmosphereResourceStateRecovery;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.transaction.TransactionType;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CheckoutBalanceStrategyTest {
+class CheckoutBalanceStrategyTest {
 
     @Test
-    void supportsTest(){
+    void supports_WorkingTest(){
         CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
         boolean expectCheckout = checkoutBalanceStrategy.supports(TransactionType.CHECKOUT);
 
@@ -25,13 +21,13 @@ public class CheckoutBalanceStrategyTest {
     }
 
     @Test
-    void supportsTransactionTypeIsNull(){
+    void supports_TransactionTypeIsNull(){
         CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
         assertThrows(NullPointerException.class, () -> checkoutBalanceStrategy.supports(null));
     }
 
     @Test
-    void generateNewBalanceValueTest(){
+    void generateNewBalanceValue_WorkingTest(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal checkoutValue = new BigDecimal("20.00");
 
@@ -42,7 +38,7 @@ public class CheckoutBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueCurrentBalanceIsNull(){
+    void generateNewBalanceValue_CurrentBalanceIsNull(){
         BigDecimal currentBalance = null;
         BigDecimal checkoutValue = new BigDecimal("20.00");
 
@@ -53,7 +49,7 @@ public class CheckoutBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueCheckoutValueIsNull(){
+    void generateNewBalanceValue_CheckoutValueIsNull(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal checkoutValue = null;
 
@@ -64,7 +60,7 @@ public class CheckoutBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueNegativeCheckoutValue(){
+    void generateNewBalanceValue_NegativeCheckoutValue(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal negativeCheckoutValue = new BigDecimal("-20.00");
 

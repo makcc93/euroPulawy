@@ -10,10 +10,10 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class DepositBalanceStrategyTest {
+class DepositBalanceStrategyTest {
 
     @Test
-    void supportsTest(){
+    void supports_WorkingTest(){
         DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
         boolean supports = depositBalanceStrategy.supports(TransactionType.DEPOSIT);
 
@@ -21,17 +21,16 @@ public class DepositBalanceStrategyTest {
     }
 
     @Test
-    void supportsTransactionTypeIsNull(){
+    void supports_TransactionTypeIsNull(){
         DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
 
        assertThrows(NullPointerException.class, () -> depositBalanceStrategy.supports(null));
     }
 
     @Test
-    void generateNewBalanceValueCheck(){
+    void generateNewBalanceValue_WorkingTest(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal depositValue = new BigDecimal("20.00");
-
         DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
         BigDecimal expectedNewValue = depositBalanceStrategy.generateNewBalanceValue(currentBalance, depositValue);
 
@@ -39,7 +38,7 @@ public class DepositBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueCheckNegativeValue(){
+    void generateNewBalanceValue_DepositHasNegativeValue(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal depositValue = new BigDecimal("-20.00");
 
@@ -51,7 +50,7 @@ public class DepositBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueCurrentBalanceIsNull(){
+    void generateNewBalanceValue_CurrentBalanceIsNull(){
         BigDecimal currentBalance = null;
         BigDecimal depositValue = new BigDecimal("10.00");
 
@@ -63,7 +62,7 @@ public class DepositBalanceStrategyTest {
     }
 
     @Test
-    void generateNewBalanceValueTransactionValueIsNull(){
+    void generateNewBalanceValue_TransactionValueIsNull(){
         BigDecimal currentBalance = new BigDecimal("10.00");
         BigDecimal depositValue = null;
 

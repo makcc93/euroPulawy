@@ -4,6 +4,7 @@ import com.vaadin.flow.router.NotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import pl.eurokawa.email.strategy.EmailGeneratorStrategy;
+import pl.eurokawa.exception.ArgumentNullChecker;
 
 import java.util.List;
 
@@ -16,13 +17,14 @@ public class EmailContentFactory {
     }
 
     public String generateSubjectValue(EmailType emailType){
-        //tu sprawdzdenie nulla argumentu
+        ArgumentNullChecker.check(emailType,"Email type");
 
         return findStrategy(emailType).generateEmailSubject();
     }
 
     public String generateBodyValue(EmailType emailType, String token){
-        //tu sprawdzenie nulla argumentow
+        ArgumentNullChecker.check(emailType,"Email type");
+        ArgumentNullChecker.check(token,"Token");
 
         return findStrategy(emailType).generateEmailBody(token);
     }
