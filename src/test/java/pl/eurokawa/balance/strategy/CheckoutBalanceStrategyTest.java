@@ -49,7 +49,7 @@ public class CheckoutBalanceStrategyTest {
         CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
         NullPointerException exception = assertThrows(NullPointerException.class, () -> checkoutBalanceStrategy.generateNewBalanceValue(currentBalance, checkoutValue));
 
-        assertEquals("Current balance value cannot be null",exception.getMessage());
+        assertEquals("Current balance cannot be null",exception.getMessage());
     }
 
     @Test

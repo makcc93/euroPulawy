@@ -3,6 +3,7 @@ package pl.eurokawa.balance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.eurokawa.balance.strategy.BalanceStrategy;
+import pl.eurokawa.exception.ArgumentNullChecker;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
 
@@ -24,9 +25,9 @@ public class BalanceServiceImpl implements BalanceService{
     @Override
     @Transactional
     public void updateBalance(User user, BigDecimal value, TransactionType transactionType) {
-        Objects.requireNonNull(user,"User cannot be null");
-        Objects.requireNonNull(value,"Value cannot be null");
-        Objects.requireNonNull(transactionType,"TransactionType cannot be null");
+        ArgumentNullChecker.check(user,"User");
+        ArgumentNullChecker.check(value,"Value");
+        ArgumentNullChecker.check(transactionType,"Transaction type");
 
         BigDecimal currentBalance = getCurrentBalance();
 

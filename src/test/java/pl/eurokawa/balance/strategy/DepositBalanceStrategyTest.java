@@ -59,7 +59,7 @@ public class DepositBalanceStrategyTest {
 
         NullPointerException exception = assertThrows(NullPointerException.class, () -> depositBalanceStrategy.generateNewBalanceValue(currentBalance, depositValue));
 
-        assertEquals("Current balance value cannot be null", exception.getMessage());
+        assertEquals("Current balance cannot be null", exception.getMessage());
     }
 
     @Test

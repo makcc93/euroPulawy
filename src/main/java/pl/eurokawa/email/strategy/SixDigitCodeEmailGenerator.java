@@ -14,7 +14,7 @@ public class SixDigitCodeEmailGenerator implements EmailGeneratorStrategy{
     }
 
     @Override
-    public String generateEmailBody() {
-        return "Działanie na stronie wymaga autoryzacji.\n\nTwój kod to:\n\n" ;
+    public String generateEmailBody(String code) {
+        return "Działanie na stronie wymaga autoryzacji.\n\nTwój kod to:\n\n" + code;
     }
 }

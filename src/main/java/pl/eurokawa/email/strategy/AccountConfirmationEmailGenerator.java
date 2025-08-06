@@ -16,7 +16,7 @@ public class AccountConfirmationEmailGenerator implements  EmailGeneratorStrateg
     }
 
     @Override
-    public String generateEmailBody() {
-        return "Dziękujemy za rejestrację w serwisie europulawy.pl!\nWejdź w poniższy link, aby potwierdzić email swojego konta:\n\n";
+    public String generateEmailBody(String url) {
+        return "Dziękujemy za rejestrację w serwisie europulawy.pl!\nWejdź w poniższy link, aby potwierdzić email swojego konta:\n\n" + url;
     }
 }

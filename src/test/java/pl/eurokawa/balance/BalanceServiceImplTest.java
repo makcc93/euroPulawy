@@ -186,7 +186,7 @@ public class BalanceServiceImplTest {
         NullPointerException exception = assertThrows(NullPointerException.class,
                 () -> spy.updateBalance(user, value, transactionType));
 
-        assertEquals("TransactionType cannot be null", exception.getMessage());
+        assertEquals("Transaction type cannot be null", exception.getMessage());
     }
 
     @Test

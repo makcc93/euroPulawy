@@ -17,14 +17,10 @@ public class NewUserRegisterEmailGenerator implements EmailGeneratorStrategy{
     }
 
     @Override
-    public String generateEmailBody() {
-        return """
-                        Właśnie zarejestrował się nowy użytkownik.
-                        
-                        Sprawdź jego autentyczność i nadaj mu odpowiednie uprawnienia!
-                        
-                        Jeśli po samych danych chcesz zatwierdzić użytkownika kliknij poniższy link:
-                        
-                      """;
+    public String generateEmailBody(String url) {
+        return "Właśnie zarejestrował się nowy użytkownik.\n\n" +
+                "Sprawdź jego autentyczność i nadaj mu odpowiednie uprawnienia.\n\n" +
+                "Jeśli od razu chcesz potwierdzić nową rejestrację kliknij w link poniżej:\n\n\""
+                + url;
     }
 }

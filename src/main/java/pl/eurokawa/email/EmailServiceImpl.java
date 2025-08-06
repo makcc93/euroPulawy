@@ -20,44 +20,36 @@ public class EmailServiceImpl implements EmailService{
     private final JavaMailSender javaMailSender;
     private final String fromAddress;
     private final UserService userService;
-    private final List<EmailGeneratorStrategy> strategies;
+    private final EmailContentFactory emailContentFactory;
 
     public EmailServiceImpl(JavaMailSender javaMailSender,
-                            @Value("${spring.mail.username}") String fromAddress, UserService userService, List<EmailGeneratorStrategy> strategies){
+                            @Value("${spring.mail.username}") String fromAddress, UserService userService, EmailContentFactory emailContentFactory){
         this.javaMailSender = javaMailSender;
         this.fromAddress = fromAddress;
         this.userService = userService;
-        this.strategies = strategies;
+        this.emailContentFactory = emailContentFactory;
     }
 
     @Override
     public void sendSixNumbersCode(EmailType emailType, User user, String code){
-        String subject = generateSubjectValue(emailType);
-        String bodyWithCode = generateBodyValue(emailType) + code;
-
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(user.getEmail());
-        message.setSubject(subject);
-        message.setText(bodyWithCode);
+        message.setSubject(emailContentFactory.generateSubjectValue(emailType));
+        message.setText(emailContentFactory.generateBodyValue(emailType,code));
 
         javaMailSender.send(message);
-        log.info("EMAILservice, sendSixNumbersCode do: {}", user);
     }
 
     @Override
     public void sendEmailConfirmationLink(EmailType emailType,User user, String token){
-        String url = "http://europulawy.pl/users/" + user.getId()+ "/emailConfirmation/" + token;
-
-        String subjectWithUserInfo = generateSubjectValue(emailType) + user;
-
-        String bodyWithUrl = generateBodyValue(emailType) + url;
+        String url = "http://europulawy.pl/users/" + user.getId() + "/emailConfirmation/" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
         message.setTo(user.getEmail());
-        message.setSubject(subjectWithUserInfo);
-        message.setText(bodyWithUrl);
+        message.setSubject(emailContentFactory.generateSubjectValue(emailType));
+        message.setText(emailContentFactory.generateBodyValue(emailType,url));
 
         javaMailSender.send(message);
         log.info("EMAILservice, sendEmailConfirmationLink do: {}", user);
@@ -67,13 +59,10 @@ public class EmailServiceImpl implements EmailService{
     public void sendEmailNotificationToAdmins (EmailType emailType, User user, String token){
         String url = "http://europulawy.pl/users/admin-account-confirmation/" + user.getId() + "/" + token;
 
-        String subjectWithUserInfo = generateSubjectValue(emailType) + user;
-        String bodyWithUrl = generateBodyValue(emailType) + url;
-
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
-        message.setSubject(subjectWithUserInfo);
-        message.setText(bodyWithUrl);
+        message.setSubject(emailContentFactory.generateSubjectValue(emailType));
+        message.setText(emailContentFactory.generateBodyValue(emailType,url));
 
         for (User singleUser : userService.getAll()){
             if (singleUser.getRole().equals(UserType.ADMIN.name())){
@@ -86,20 +75,5 @@ public class EmailServiceImpl implements EmailService{
                 }
             }
         }
-    }
-
-    private String generateSubjectValue(EmailType emailType){
-        return findStrategy(emailType).generateEmailSubject();
-    }
-
-    private String generateBodyValue(EmailType emailType){
-        return findStrategy(emailType).generateEmailBody();
-    }
-
-    private EmailGeneratorStrategy findStrategy(EmailType emailType){
-        return strategies.stream()
-                .filter(strategy -> strategy.supports(emailType))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("Cannot find email strategy by email type: " +  emailType));
     }
 }

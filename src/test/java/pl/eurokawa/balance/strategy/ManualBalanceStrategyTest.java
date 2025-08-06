@@ -58,7 +58,7 @@ public class ManualBalanceStrategyTest {
         ManualBalanceStrategy manualBalanceStrategy = new ManualBalanceStrategy();
         NullPointerException exception = assertThrows(NullPointerException.class, () -> manualBalanceStrategy.generateNewBalanceValue(currentBalance, manualValue));
 
-        assertEquals("Current balance value cannot be null", exception.getMessage());
+        assertEquals("Current balance cannot be null", exception.getMessage());
     }
 
     @Test

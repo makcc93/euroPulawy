@@ -6,5 +6,5 @@ import pl.eurokawa.user.User;
 public interface EmailGeneratorStrategy {
     boolean supports(EmailType emailType);
     String generateEmailSubject();
-    String generateEmailBody();
+    String generateEmailBody(String token);
 }
