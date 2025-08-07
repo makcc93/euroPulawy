@@ -1,4 +1,4 @@
-package pl.eurokawa.views.adminPanel.terms;
+package pl.eurokawa.frontend.adminPanel.terms;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;

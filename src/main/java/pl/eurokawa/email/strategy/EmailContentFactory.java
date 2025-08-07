@@ -1,8 +1,8 @@
-package pl.eurokawa.email;
+package pl.eurokawa.email.strategy;
 
 import com.vaadin.flow.router.NotFoundException;
 import org.springframework.stereotype.Service;
-import pl.eurokawa.email.strategy.EmailGeneratorStrategy;
+import pl.eurokawa.email.EmailType;
 import pl.eurokawa.exception.ArgumentNullChecker;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package pl.eurokawa.views.adminPanel.balance;
+package pl.eurokawa.frontend.adminPanel.balance;
 
 
 import com.vaadin.flow.component.button.Button;
@@ -18,7 +18,7 @@ import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.token.*;
 import pl.eurokawa.transaction.TransactionType;
 import pl.eurokawa.user.User;
-import pl.eurokawa.views.layouts.LayoutForDialog;
+import pl.eurokawa.frontend.layouts.LayoutForDialog;
 
 import java.math.BigDecimal;
 

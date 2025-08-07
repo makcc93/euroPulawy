@@ -1,4 +1,4 @@
-package pl.eurokawa.views.layouts;
+package pl.eurokawa.frontend.layouts;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -27,19 +27,19 @@ import pl.eurokawa.balance.BalanceBroadcaster;
 import pl.eurokawa.balance.BalanceService;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.user.UserType;
-import pl.eurokawa.views.HomeView;
-import pl.eurokawa.views.account.UserAccountView;
-import pl.eurokawa.views.adminPanel.balance.BalanceManualSetterView;
-import pl.eurokawa.views.adminPanel.product.ProductManagerViewSOLID;
-import pl.eurokawa.views.adminPanel.terms.TermsOfServiceAdderView;
-import pl.eurokawa.views.adminPanel.terms.TermsOfServiceListView;
-import pl.eurokawa.views.deposits.DepositAdderView;
-import pl.eurokawa.views.deposits.DepositConfirmationView;
-import pl.eurokawa.views.deposits.DepositListView;
-import pl.eurokawa.views.purchase.PurchaseAdderView;
-import pl.eurokawa.views.purchase.PurchaseConfirmationView;
-import pl.eurokawa.views.purchase.PurchaseHistoryView;
-import pl.eurokawa.views.user.UserView;
+import pl.eurokawa.frontend.HomeView;
+import pl.eurokawa.frontend.account.UserAccountView;
+import pl.eurokawa.frontend.adminPanel.balance.BalanceManualSetterView;
+import pl.eurokawa.frontend.adminPanel.product.ProductManagerViewSOLID;
+import pl.eurokawa.frontend.adminPanel.terms.TermsOfServiceAdderView;
+import pl.eurokawa.frontend.adminPanel.terms.TermsOfServiceListView;
+import pl.eurokawa.frontend.deposits.DepositAdderView;
+import pl.eurokawa.frontend.deposits.DepositConfirmationView;
+import pl.eurokawa.frontend.deposits.DepositListView;
+import pl.eurokawa.frontend.purchase.PurchaseAdderView;
+import pl.eurokawa.frontend.purchase.PurchaseConfirmationView;
+import pl.eurokawa.frontend.purchase.PurchaseHistoryView;
+import pl.eurokawa.frontend.user.UserView;
 
 import java.math.BigDecimal;
 import java.util.Timer;

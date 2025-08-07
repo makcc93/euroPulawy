@@ -1,4 +1,4 @@
-package pl.eurokawa.views.adminPanel.terms;
+package pl.eurokawa.frontend.adminPanel.terms;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;

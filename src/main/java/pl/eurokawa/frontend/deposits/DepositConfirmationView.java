@@ -1,4 +1,4 @@
-package pl.eurokawa.views.deposits;
+package pl.eurokawa.frontend.deposits;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

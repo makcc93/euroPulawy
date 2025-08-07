@@ -1,4 +1,4 @@
-package pl.eurokawa.views.account;
+package pl.eurokawa.frontend.account;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -26,9 +26,9 @@ import pl.eurokawa.user.User;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.email.EmailService;
 import pl.eurokawa.user.UserService;
-import pl.eurokawa.views.HomeView;
-import pl.eurokawa.views.layouts.MainLayout;
-import pl.eurokawa.views.layouts.LayoutForDialog;
+import pl.eurokawa.frontend.HomeView;
+import pl.eurokawa.frontend.layouts.MainLayout;
+import pl.eurokawa.frontend.layouts.LayoutForDialog;
 
 import java.util.Optional;
 

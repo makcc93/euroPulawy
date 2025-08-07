@@ -1,4 +1,4 @@
-package pl.eurokawa.views.adminPanel.product;
+package pl.eurokawa.frontend.adminPanel.product;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -23,7 +23,7 @@ import pl.eurokawa.token.Token;
 import pl.eurokawa.token.TokenService;
 import pl.eurokawa.token.TokenType;
 import pl.eurokawa.user.User;
-import pl.eurokawa.views.layouts.LayoutForDialog;
+import pl.eurokawa.frontend.layouts.LayoutForDialog;
 
 @Route("product-manager-solid")
 @RolesAllowed("ADMIN")

@@ -1,4 +1,4 @@
-package pl.eurokawa.views.user;
+package pl.eurokawa.frontend.user;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -33,7 +33,7 @@ import pl.eurokawa.transaction.TransactionService;
 import pl.eurokawa.user.UserService;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserType;
-import pl.eurokawa.views.layouts.MainLayout;
+import pl.eurokawa.frontend.layouts.MainLayout;
 
 import java.math.BigDecimal;
 import java.util.Optional;

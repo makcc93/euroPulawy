@@ -1,4 +1,4 @@
-package pl.eurokawa.views;
+package pl.eurokawa.frontend;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import pl.eurokawa.user.User;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.user.UserType;
-import pl.eurokawa.views.layouts.EmptyLayout;
+import pl.eurokawa.frontend.layouts.EmptyLayout;
 
 @UIScope
 @Route(value = "notconfirmed", layout = EmptyLayout.class)

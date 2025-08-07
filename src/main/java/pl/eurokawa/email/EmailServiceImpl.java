@@ -1,19 +1,16 @@
 package pl.eurokawa.email;
 
-import com.vaadin.flow.router.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import pl.eurokawa.email.strategy.EmailGeneratorStrategy;
+import pl.eurokawa.email.strategy.EmailContentFactory;
 import pl.eurokawa.exception.ArgumentNullChecker;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserService;
 import pl.eurokawa.user.UserType;
-
-import java.util.List;
 
 @Service
 public class EmailServiceImpl implements EmailService{

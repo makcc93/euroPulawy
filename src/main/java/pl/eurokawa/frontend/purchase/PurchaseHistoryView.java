@@ -1,4 +1,4 @@
-package pl.eurokawa.views.purchase;
+package pl.eurokawa.frontend.purchase;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;

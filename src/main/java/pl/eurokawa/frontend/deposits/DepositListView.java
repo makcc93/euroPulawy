@@ -1,4 +1,4 @@
-package pl.eurokawa.views.deposits;
+package pl.eurokawa.frontend.deposits;
 
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;

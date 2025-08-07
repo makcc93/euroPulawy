@@ -1,4 +1,4 @@
-package pl.eurokawa.views;
+package pl.eurokawa.frontend;
 
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;

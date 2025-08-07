@@ -1,4 +1,4 @@
-package pl.eurokawa.views.layouts;
+package pl.eurokawa.frontend.layouts;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;

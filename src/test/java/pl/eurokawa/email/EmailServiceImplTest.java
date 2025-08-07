@@ -1,4 +1,4 @@
-package pl.eurokawa.email.strategy;
+package pl.eurokawa.email;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,9 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import pl.eurokawa.email.EmailContentFactory;
-import pl.eurokawa.email.EmailServiceImpl;
-import pl.eurokawa.email.EmailType;
+import pl.eurokawa.email.strategy.EmailContentFactory;
 import pl.eurokawa.user.User;
 import pl.eurokawa.user.UserService;
 import pl.eurokawa.user.UserType;

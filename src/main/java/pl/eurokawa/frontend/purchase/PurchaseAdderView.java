@@ -1,4 +1,4 @@
-package pl.eurokawa.views.purchase;
+package pl.eurokawa.frontend.purchase;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;

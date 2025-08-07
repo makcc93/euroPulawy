@@ -1,4 +1,4 @@
-package pl.eurokawa.views.login;
+package pl.eurokawa.frontend.login;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -36,10 +36,10 @@ import pl.eurokawa.terms.TermsOfServiceService;
 import pl.eurokawa.token.*;
 import pl.eurokawa.user.DTO.RegisterUserRequest;
 import pl.eurokawa.user.User;
-import pl.eurokawa.views.layouts.EmptyLayout;
+import pl.eurokawa.frontend.layouts.EmptyLayout;
 import pl.eurokawa.user.UserService;
 import org.apache.commons.validator.routines.EmailValidator;
-import pl.eurokawa.views.layouts.LayoutForDialog;
+import pl.eurokawa.frontend.layouts.LayoutForDialog;
 
 
 @AnonymousAllowed
