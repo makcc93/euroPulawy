@@ -21,6 +21,13 @@ class CheckoutBalanceStrategyTest {
     }
 
     @Test
+    void supports_BalanceDepositShouldNotPassed(){
+        var checkoutBalanceStrategy = new CheckoutBalanceStrategy();
+        assertFalse(checkoutBalanceStrategy.supports(TransactionType.DEPOSIT));
+
+    }
+
+    @Test
     void supports_TransactionTypeIsNull(){
         CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
         assertThrows(NullPointerException.class, () -> checkoutBalanceStrategy.supports(null));
