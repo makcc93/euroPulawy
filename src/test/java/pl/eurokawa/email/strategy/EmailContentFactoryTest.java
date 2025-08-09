@@ -26,7 +26,7 @@ class EmailContentFactoryTest {
 
         EmailGeneratorStrategy mockStrategy = mock(EmailGeneratorStrategy.class);
         when(mockStrategy.supports(emailType)).thenReturn(true);
-        when(mockStrategy.generateEmailSubject()).thenReturn("example subcject");
+        when(mockStrategy.generateEmailSubject()).thenReturn("example subject");
 
         EmailContentFactory emailContentFactory = new EmailContentFactory(List.of(mockStrategy));
         emailContentFactory.generateSubjectValue(emailType);

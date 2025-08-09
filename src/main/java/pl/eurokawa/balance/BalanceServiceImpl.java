@@ -48,7 +48,7 @@ public class BalanceServiceImpl implements BalanceService{
         Objects.requireNonNull(userId,"User ID cannot be null");
 
         return Optional.ofNullable(balanceRepository.findUserLastBalanceOperation(userId))
-                .orElseThrow(() -> new IllegalArgumentException("Cannot find user last balance record by his id: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("Cannot find user last balance by id: " + userId));
     }
 
     private BalanceStrategy findStrategy(TransactionType transactionType){

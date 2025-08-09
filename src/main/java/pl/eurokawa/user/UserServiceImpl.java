@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.router.NotFoundException;
+import jakarta.validation.ValidationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import pl.eurokawa.exception.ArgumentNullChecker;
 import pl.eurokawa.user.DTO.PasswordUserRequest;
 import pl.eurokawa.user.DTO.RegisterUserRequest;
 
@@ -20,14 +22,20 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public User registerUser(RegisterUserRequest request){
-        String securedPassword = passwordEncoder.encode(request.getPassword());
+    public User registerUser(RegisterUserRequest request, String repeatedPassword){
+        if (!request.password().equals(repeatedPassword)){
+            throw new ValidationException("Hasła się nie zgadzają");
+        }
+
+        if (userRepository.existsByEmail(request.email())){
+            throw new ValidationException("Email już istnieje w bazie użytkowników");
+        }
 
         User user = new User(
-                request.getFirstName(),
-                request.getLastName(),
-                request.getEmail(),
-                securedPassword
+                request.firstName(),
+                request.lastName(),
+                request.email(),
+                passwordEncoder.encode(request.password())
         );
 
         return userRepository.save(user);
@@ -45,7 +53,7 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public void updateUserPassword(User user, PasswordUserRequest request){
-        user.setPassword(request.getPassword());
+        user.setPassword(request.password());
         userRepository.save(user);
     }
 
@@ -57,6 +65,7 @@ public class UserServiceImpl implements UserService{
     }
     @Override
     public User getByEmail(String email){
+    ArgumentNullChecker.check(email,"Email");
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("Cannot find user by email: " + email));
@@ -70,6 +79,14 @@ public class UserServiceImpl implements UserService{
     @Override
     public List<User> findOnlyConfirmedUsers() {
         return userRepository.findOnlyConfirmedUsers();
+    }
+
+    @Override
+    public List<User> findByType(UserType userType) {
+        ArgumentNullChecker.check(userType,"User type");
+
+        return Optional.ofNullable(userRepository.findByType(userType))
+                .orElseThrow(() -> new IllegalArgumentException("Cannot find user by type: " + userType));
     }
 
     @Override

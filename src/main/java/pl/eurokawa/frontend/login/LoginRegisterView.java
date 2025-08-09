@@ -168,30 +168,28 @@ public class LoginRegisterView extends Div {
             String password = passwordField.getValue();
             String confirmPassword = confirmPasswordField.getValue();
 
-            if (validateRegistration(firstName,lastName,email,password,confirmPassword)){
-                RegisterUserRequest registerUserRequest = RegisterUserRequest.builder()
-                                .firstName(firstName)
-                                .lastName(lastName)
-                                .email(email)
-                                .password(password)
-                                .build();
+            RegisterUserRequest registerUserRequest = new RegisterUserRequest(
+                    firstName,
+                    lastName,
+                    email,
+                    password
+            );
 
-                User registeredUser = userService.registerUser(registerUserRequest);
-                Token token = tokenService.generateToken(registeredUser, TokenType.REGISTRATION);
+            User registeredUser = userService.registerUser(registerUserRequest,confirmPassword);
+            Token token = tokenService.generateToken(registeredUser, TokenType.REGISTRATION);
 
-                emailServiceImpl.sendEmailConfirmationLink(EmailType.EMAIL_CONFIRMATION,registeredUser,token.getValue());
+            emailServiceImpl.sendEmailConfirmationLink(EmailType.EMAIL_CONFIRMATION,registeredUser,token.getValue());
 
-                Notification.show("Rejestracja udana!\n Na Twoją skrzynkę email" + registeredUser.getEmail() + " został wysłany link aktywacyjny.",
+            Notification.show("Rejestracja udana!\n Na Twoją skrzynkę email" + registeredUser.getEmail() + " został wysłany link aktywacyjny.",
                         5000, Notification.Position.MIDDLE);
 
-                clearForm(firstNameField,lastNameField,emailField);
-                clearPassword(passwordField,confirmPasswordField);
+            clearForm(firstNameField,lastNameField,emailField);
+            clearPassword(passwordField,confirmPasswordField);
 
-                Token accountConfirmationToken = tokenService.generateToken(registeredUser,TokenType.ACCOUNT_CONFIRMATION);
+            Token accountConfirmationToken = tokenService.generateToken(registeredUser,TokenType.ACCOUNT_CONFIRMATION);
 
-                emailServiceImpl.sendEmailNotificationToAdmins(EmailType.NEW_USER_REGISTER,registeredUser, accountConfirmationToken.getValue());
-            }
-        });
+            emailServiceImpl.sendEmailNotificationToAdmins(EmailType.NEW_USER_REGISTER,registeredUser, accountConfirmationToken.getValue());
+            });
         registerButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
         registerButton.setEnabled(false);
 
@@ -226,46 +224,6 @@ public class LoginRegisterView extends Div {
         }
     }
 
-    private boolean validateRegistration(String firstName, String lastName, String email,String password, String repeatedPassword){
-        if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() ||password.isEmpty() || repeatedPassword.isEmpty()){
-            Notification.show("Uzupełnij poprawnie wszystkie pola",5000, Notification.Position.BOTTOM_CENTER);
-
-            return false;
-        }
-
-        if (!passwordValidator.validatePassword(password)){
-            Notification.show("Hasło jest za krótkie!",5000, Notification.Position.TOP_CENTER);
-
-            return false;
-        }
-
-        if (!passwordValidator.doPasswordsMatch(password,repeatedPassword)){
-            Notification.show("Hasła do siebie nie pasują!",5000, Notification.Position.TOP_CENTER);
-
-            return false;
-        };
-
-        if (userService.getAll().contains(userService.getByEmail(email))){
-            Notification.show("Użytkownik z podanym mailem już istnieje!",5000, Notification.Position.BOTTOM_CENTER);
-
-            return false;
-        }
-
-        if (!emailIsValid(email)){
-            Notification.show("Błędny email!",5000, Notification.Position.BOTTOM_CENTER);
-
-            return false;
-        }
-
-        if (!nameIsValid(firstName) || !nameIsValid(lastName)){
-            Notification.show("Niedozwolone znaki w imieniu lub nazwisku!",5000, Notification.Position.BOTTOM_CENTER);
-
-            return false;
-        }
-
-        return true;
-    }
-
     private String normalizeName(String input){
         String workingOnName = input.trim().toLowerCase();
         char[] array = workingOnName.toCharArray();
@@ -281,17 +239,8 @@ public class LoginRegisterView extends Div {
         return sb.toString();
     }
 
-    private boolean emailIsValid(String email){
-
-        return EmailValidator.getInstance().isValid(email);
-    }
-
     private boolean nameIsValid(String name){
-        if (name.matches("^[A-Za-z-']śćńźżóąę+$")){
-            return true;
-        };
-
-        return false;
+        return name.matches("^[A-Za-z-']śćńźżóąę+$");
     }
 
     private VerticalLayout createLoginView(){
@@ -335,9 +284,7 @@ public class LoginRegisterView extends Div {
             }
         });
 
-        loginForm.addForgotPasswordListener(event -> {
-            setNewPassword();
-        });
+        loginForm.addForgotPasswordListener(event -> setNewPassword());
     }
 
     private static LoginI18n getLoginI18n() {

@@ -95,6 +95,7 @@ class EmailServiceImplTest {
     void sendEmailNotificationToAdmins_SendingTest(){
         User user = new User();
         user.setEmail("test@test.com");
+        user.setRole(UserType.ADMIN.name());
         String code = "123456";
         EmailType emailType = EmailType.SIX_DIGIT_CODE;
 

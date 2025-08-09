@@ -3,6 +3,7 @@ package pl.eurokawa.user;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,5 +17,10 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
 
     @Query("SELECT u FROM User u WHERE  u.role != 'NOTCONFIRMED'")
     List<User> findOnlyConfirmedUsers();
+
+    @Query("SELECT u FROM User u WHERE u.type = :userType")
+    List<User> findByType(@Param("userType") UserType userType);
+
+    Boolean existsByEmail(String email);
 
 }

@@ -247,6 +247,6 @@ public class BalanceServiceImplTest {
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.findUserLastBalanceOperation(1));
 
-        assertEquals("Cannot find user last balance record by his id: 1",exception.getMessage());
+        assertEquals("Cannot find user last balance by id: 1",exception.getMessage());
     }
 }
