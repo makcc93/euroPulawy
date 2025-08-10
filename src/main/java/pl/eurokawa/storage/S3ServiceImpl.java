@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.eurokawa.exception.ArgumentNullChecker;
 import pl.eurokawa.file.FileType;
 import pl.eurokawa.security.S3Config;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -29,10 +30,9 @@ public class S3ServiceImpl implements S3Service{
 
     @Override
     public void uploadFileToS3(FileType fileType, String fileName, byte[] data){
-        if (fileType == null || fileName == null || data == null){
-            log.warn("s3Service, upload file, sth is null:( {} | {} | {}",fileType,fileName,data);
-            throw new IllegalArgumentException("Illegal upload request!");
-        }
+        ArgumentNullChecker.check(fileType,"File type");
+        ArgumentNullChecker.check(fileName,"File name");
+        ArgumentNullChecker.check(data,"Byte[] data");
 
         String fullS3key = fileType.getFolder() + "/" + fileName;
         String bucket = s3Config.getBucketName();

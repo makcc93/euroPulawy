@@ -10,7 +10,7 @@ import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
 import pl.eurokawa.file.FileService;
 import pl.eurokawa.file.FileType;
-import pl.eurokawa.file.name.NameConversionService;
+import pl.eurokawa.file.conversion.NameConversionService;
 import pl.eurokawa.security.SecurityService;
 import pl.eurokawa.terms.TermsOfService;
 import pl.eurokawa.terms.TermsOfServiceRepository;

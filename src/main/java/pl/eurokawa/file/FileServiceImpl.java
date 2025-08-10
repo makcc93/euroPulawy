@@ -2,6 +2,7 @@ package pl.eurokawa.file;
 
 import com.vaadin.flow.router.NotFoundException;
 import org.springframework.stereotype.Service;
+import pl.eurokawa.exception.ArgumentNullChecker;
 import pl.eurokawa.storage.S3Service;
 
 import java.io.IOException;
@@ -18,9 +19,9 @@ public class FileServiceImpl implements FileService{
 
     @Override
     public byte[] uploadFile(FileType fileType, InputStream inputStream, String remoteFileName) throws IOException {
-        if (fileType == null || inputStream == null || remoteFileName == null){
-            throw new IOException("Cannot read file type, input stream or remote file name");
-        }
+        ArgumentNullChecker.check(fileType,"File type");
+        ArgumentNullChecker.check(inputStream,"Input stream");
+        ArgumentNullChecker.check(remoteFileName,"File name");
 
         try{
             byte[] fileBytes = inputStream.readAllBytes();
@@ -35,15 +36,17 @@ public class FileServiceImpl implements FileService{
 
     @Override
     public void deleteFile(FileType fileType, String fileName) {
-        if (fileType == null || fileName == null){
-            throw new IllegalArgumentException("There is no file to delete! Invalid request: file type or name is null!");
-        }
+        ArgumentNullChecker.check(fileType,"File type");
+        ArgumentNullChecker.check(fileName,"File name");
 
         s3Service.deleteFileFromS3(fileType,fileName);
     }
 
     @Override
     public byte[] getFile(FileType fileType, String fileKey) {
+        ArgumentNullChecker.check(fileType,"File type");
+        ArgumentNullChecker.check(fileKey,"File key");
+
         return Optional.ofNullable(s3Service.downloadFileFromS3(fileType,fileKey))
                 .orElseThrow(() -> new NotFoundException("Cannot find this file!"));
     }

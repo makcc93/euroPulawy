@@ -1,4 +1,4 @@
-package pl.eurokawa.file.name;
+package pl.eurokawa.file.conversion;
 
 public interface NameConversionService {
     String generateSecureFileName(String input);

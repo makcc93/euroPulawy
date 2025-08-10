@@ -1,6 +1,7 @@
-package pl.eurokawa.file.name;
+package pl.eurokawa.file.conversion;
 
 import org.springframework.stereotype.Service;
+import pl.eurokawa.exception.ArgumentNullChecker;
 
 import java.util.UUID;
 
@@ -8,12 +9,15 @@ import java.util.UUID;
 public class NameConversionServiceImpl implements NameConversionService {
 
     @Override
-    public String generateSecureFileName(String input) {
+    public String generateSecureFileName(String fileName) {
+        ArgumentNullChecker.check(fileName,"File name");
 
-        return randomizeName(normalizeName(input));
+        return randomizeName(normalizeName(fileName));
     }
 
     private String normalizeName(String fileName){
+        ArgumentNullChecker.check(fileName,"File name");
+
         return fileName
                 .toLowerCase()
                 .replaceAll("[\\s]","_")
@@ -21,6 +25,8 @@ public class NameConversionServiceImpl implements NameConversionService {
     }
 
     private String randomizeName(String fileName){
+        ArgumentNullChecker.check(fileName,"File name");
+
         return UUID.randomUUID() + "_" + fileName;
     }
 }

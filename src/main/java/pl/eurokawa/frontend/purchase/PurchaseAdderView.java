@@ -28,7 +28,7 @@ import org.springframework.security.core.Authentication;
 import org.vaadin.lineawesome.LineAwesomeIconUrl;
 import pl.eurokawa.file.FileService;
 import pl.eurokawa.file.FileType;
-import pl.eurokawa.file.name.NameConversionService;
+import pl.eurokawa.file.conversion.NameConversionService;
 import pl.eurokawa.product.Product;
 import pl.eurokawa.product.ProductService;
 import pl.eurokawa.purchase.DTO.CreatePurchaseRequest;
