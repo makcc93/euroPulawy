@@ -2,6 +2,7 @@ package pl.eurokawa.balance.strategy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.transaction.TransactionType;
 
@@ -12,33 +13,31 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class DepositBalanceStrategyTest {
 
+    @InjectMocks
+    DepositBalanceStrategy strategy;
+
     @Test
     void supports_WorkingTest(){
-        DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
-        boolean supports = depositBalanceStrategy.supports(TransactionType.DEPOSIT);
+        boolean supports = strategy.supports(TransactionType.DEPOSIT);
 
         assertTrue(supports);
     }
 
     @Test
     void supports_CheckoutShouldNotPassed(){
-        var depositBalanceStrategy = new DepositBalanceStrategy();
-        assertFalse(depositBalanceStrategy.supports(TransactionType.CHECKOUT));
+        assertFalse(strategy.supports(TransactionType.CHECKOUT));
     }
 
     @Test
     void supports_TransactionTypeIsNull(){
-        DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
-
-       assertThrows(NullPointerException.class, () -> depositBalanceStrategy.supports(null));
+       assertThrows(NullPointerException.class, () -> strategy.supports(null));
     }
 
     @Test
     void generateNewBalanceValue_WorkingTest(){
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal depositValue = new BigDecimal("20.00");
-        DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
-        BigDecimal expectedNewValue = depositBalanceStrategy.generateNewBalanceValue(currentBalance, depositValue);
+        BigDecimal expectedNewValue = strategy.generateNewBalanceValue(currentBalance, depositValue);
 
         assertEquals(new BigDecimal("120.00"),expectedNewValue);
     }
@@ -48,9 +47,7 @@ class DepositBalanceStrategyTest {
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal depositValue = new BigDecimal("-20.00");
 
-        DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> depositBalanceStrategy.generateNewBalanceValue(currentBalance, depositValue));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> strategy.generateNewBalanceValue(currentBalance, depositValue));
 
         assertEquals("Transaction value cannot be negative",exception.getMessage());
     }
@@ -60,9 +57,7 @@ class DepositBalanceStrategyTest {
         BigDecimal currentBalance = null;
         BigDecimal depositValue = new BigDecimal("10.00");
 
-        DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
-
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> depositBalanceStrategy.generateNewBalanceValue(currentBalance, depositValue));
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> strategy.generateNewBalanceValue(currentBalance, depositValue));
 
         assertEquals("Current balance cannot be null", exception.getMessage());
     }
@@ -72,9 +67,7 @@ class DepositBalanceStrategyTest {
         BigDecimal currentBalance = new BigDecimal("10.00");
         BigDecimal depositValue = null;
 
-        DepositBalanceStrategy depositBalanceStrategy = new DepositBalanceStrategy();
-
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> depositBalanceStrategy.generateNewBalanceValue(currentBalance, depositValue));
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> strategy.generateNewBalanceValue(currentBalance, depositValue));
 
         assertEquals("Transaction value cannot be null", exception.getMessage());
     }
