@@ -1,9 +1,9 @@
 package pl.eurokawa.file;
 
-import org.apache.commons.validator.Arg;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.storage.S3Service;
@@ -22,6 +22,9 @@ class FileServiceImplTest {
     @Mock
     S3Service s3Service;
 
+    @InjectMocks
+    FileServiceImpl service;
+
     @Test
     void uploadFile_workingTest() throws IOException {
         FileType fileType = FileType.PHOTO;
@@ -29,13 +32,9 @@ class FileServiceImplTest {
         InputStream inputStream = new ByteArrayInputStream(data);
         String remoteFileName = "test";
 
-        FileServiceImpl mock = mock(FileServiceImpl.class);
+        byte[] uploadFile = service.uploadFile(fileType, inputStream, remoteFileName);
 
-        mock.uploadFile(fileType,inputStream,remoteFileName);
-        ArgumentCaptor<InputStream> captor = ArgumentCaptor.forClass(InputStream.class);
-        verify(mock).uploadFile(eq(fileType),captor.capture(),eq(remoteFileName));
-
-        assertArrayEquals(data,captor.getValue().readAllBytes());
+        assertArrayEquals(data,uploadFile);
     }
 
     @Test
@@ -45,8 +44,7 @@ class FileServiceImplTest {
         InputStream inputStream = new ByteArrayInputStream(data);
         String remoteFileName = "test";
 
-        FileServiceImpl fileService = new FileServiceImpl(s3Service);
-        assertThrows(NullPointerException.class,() -> fileService.uploadFile(fileType,inputStream,remoteFileName));
+        assertThrows(NullPointerException.class,() -> service.uploadFile(fileType,inputStream,remoteFileName));
     }
 
     @Test
@@ -55,8 +53,7 @@ class FileServiceImplTest {
         InputStream inputStream = null;
         String remoteFileName = "test";
 
-        FileServiceImpl fileService = new FileServiceImpl(s3Service);
-        assertThrows(NullPointerException.class,() -> fileService.uploadFile(fileType,inputStream,remoteFileName));
+        assertThrows(NullPointerException.class,() -> service.uploadFile(fileType,inputStream,remoteFileName));
     }
 
     @Test
@@ -66,8 +63,7 @@ class FileServiceImplTest {
         InputStream inputStream = new ByteArrayInputStream(data);
         String remoteFileName = null;
 
-        FileServiceImpl fileService = new FileServiceImpl(s3Service);
-        assertThrows(NullPointerException.class,() -> fileService.uploadFile(fileType,inputStream,remoteFileName));
+        assertThrows(NullPointerException.class,() -> service.uploadFile(fileType,inputStream,remoteFileName));
     }
 
     @Test
@@ -77,8 +73,7 @@ class FileServiceImplTest {
         InputStream inputStream = new ByteArrayInputStream(data);
         String remoteFileName = "test";
 
-        FileServiceImpl fileService = new FileServiceImpl(s3Service);
-        fileService.uploadFile(fileType,inputStream,remoteFileName);
+        service.uploadFile(fileType,inputStream,remoteFileName);
 
         ArgumentCaptor<byte[]> captor = ArgumentCaptor.forClass(byte[].class);
 
@@ -86,4 +81,86 @@ class FileServiceImplTest {
 
         assertArrayEquals(data,captor.getValue());
     }
+
+    @Test
+    void uploadFile_ExceptionThrow() throws IOException {
+        FileType fileType = FileType.PHOTO;
+        String remoteFileName = "test";
+        byte[] data = "data".getBytes();
+
+        InputStream inputStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("Error");
+            }
+        };
+
+        assertThrows(IOException.class,() -> service.uploadFile(fileType,inputStream,remoteFileName));
+        verify(s3Service,never()).uploadFileToS3(fileType,remoteFileName,data);
+    }
+
+    @Test
+    void deleteFile_workingTest(){
+        FileType fileType = FileType.TERMS;
+        String fileName = "test";
+
+        service.deleteFile(fileType,fileName);
+        verify(s3Service,times(1)).deleteFileFromS3(fileType,fileName);
+    }
+
+    @Test
+    void deleteFile_FileTypeIsNull(){
+        FileType fileType = null;
+        String fileName = "test";
+
+        assertThrows(NullPointerException.class,() -> service.deleteFile(fileType,fileName));
+    }
+
+    @Test
+    void deleteFile_FileNameIsNull(){
+        FileType fileType = FileType.TERMS;
+        String fileName = null;
+
+        assertThrows(NullPointerException.class,() -> service.deleteFile(fileType,fileName));
+    }
+
+    @Test
+    void getFile_workingTest(){
+        FileType fileType = FileType.TERMS;
+        String fileName = "test";
+        byte[] file = "data".getBytes();
+        when(s3Service.downloadFileFromS3(fileType,fileName)).thenReturn(file);
+
+        byte[] downloadedFile = service.getFile(fileType, fileName);
+
+        assertArrayEquals(file,downloadedFile);
+    }
+
+    @Test
+    void getFile_FileTypeIsNull(){
+        FileType fileType = null;
+        String fileName = "test";
+
+        assertThrows(NullPointerException.class,() -> service.getFile(fileType,fileName));
+        verify(s3Service,never()).downloadFileFromS3(fileType,fileName);
+    }
+
+    @Test
+    void getFile_FileNameIsNull(){
+        FileType fileType = FileType.PHOTO;
+        String fileName = null;
+
+        assertThrows(NullPointerException.class,() -> service.getFile(fileType,fileName));
+        verify(s3Service,never()).downloadFileFromS3(fileType,fileName);
+    }
+
 }
+/*
+   public byte[] getFile(FileType fileType, String fileKey) {
+        ArgumentNullChecker.check(fileType,"File type");
+        ArgumentNullChecker.check(fileKey,"File key");
+
+        return Optional.ofNullable(s3Service.downloadFileFromS3(fileType,fileKey))
+                .orElseThrow(() -> new NotFoundException("Cannot find this file!"));
+    }
+ */

@@ -1,6 +1,5 @@
 package pl.eurokawa.email.strategy;
 
-import javassist.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
