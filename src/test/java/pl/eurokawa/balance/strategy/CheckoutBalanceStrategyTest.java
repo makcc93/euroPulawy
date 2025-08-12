@@ -2,6 +2,7 @@ package pl.eurokawa.balance.strategy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.transaction.TransactionType;
 
@@ -12,25 +13,25 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class CheckoutBalanceStrategyTest {
 
+    @InjectMocks
+    CheckoutBalanceStrategy strategy;
+
     @Test
     void supports_WorkingTest(){
-        CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
-        boolean expectCheckout = checkoutBalanceStrategy.supports(TransactionType.CHECKOUT);
+        boolean expectCheckout = strategy.supports(TransactionType.CHECKOUT);
 
         assertTrue(expectCheckout);
     }
 
     @Test
     void supports_BalanceDepositShouldNotPassed(){
-        var checkoutBalanceStrategy = new CheckoutBalanceStrategy();
-        assertFalse(checkoutBalanceStrategy.supports(TransactionType.DEPOSIT));
+        assertFalse(strategy.supports(TransactionType.DEPOSIT));
 
     }
 
     @Test
     void supports_TransactionTypeIsNull(){
-        CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
-        assertThrows(NullPointerException.class, () -> checkoutBalanceStrategy.supports(null));
+        assertThrows(NullPointerException.class, () -> strategy.supports(null));
     }
 
     @Test
@@ -38,8 +39,7 @@ class CheckoutBalanceStrategyTest {
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal checkoutValue = new BigDecimal("20.00");
 
-        CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
-        BigDecimal result = checkoutBalanceStrategy.generateNewBalanceValue(currentBalance, checkoutValue);
+        BigDecimal result = strategy.generateNewBalanceValue(currentBalance, checkoutValue);
 
         assertEquals(new BigDecimal("80.00"),result);
     }
@@ -49,8 +49,7 @@ class CheckoutBalanceStrategyTest {
         BigDecimal currentBalance = null;
         BigDecimal checkoutValue = new BigDecimal("20.00");
 
-        CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> checkoutBalanceStrategy.generateNewBalanceValue(currentBalance, checkoutValue));
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> strategy.generateNewBalanceValue(currentBalance, checkoutValue));
 
         assertEquals("Current balance cannot be null",exception.getMessage());
     }
@@ -60,8 +59,7 @@ class CheckoutBalanceStrategyTest {
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal checkoutValue = null;
 
-        CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
-        NullPointerException exception = assertThrows(NullPointerException.class, () -> checkoutBalanceStrategy.generateNewBalanceValue(currentBalance, checkoutValue));
+        NullPointerException exception = assertThrows(NullPointerException.class, () -> strategy.generateNewBalanceValue(currentBalance, checkoutValue));
 
         assertEquals("Transaction value cannot be null",exception.getMessage());
     }
@@ -71,8 +69,7 @@ class CheckoutBalanceStrategyTest {
         BigDecimal currentBalance = new BigDecimal("100.00");
         BigDecimal negativeCheckoutValue = new BigDecimal("-20.00");
 
-        CheckoutBalanceStrategy checkoutBalanceStrategy = new CheckoutBalanceStrategy();
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> checkoutBalanceStrategy.generateNewBalanceValue(currentBalance, negativeCheckoutValue));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> strategy.generateNewBalanceValue(currentBalance, negativeCheckoutValue));
 
         assertEquals("Transaction value cannot be negative",exception.getMessage());
     }
