@@ -3,6 +3,7 @@ package pl.eurokawa.balance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.balance.strategy.BalanceStrategy;
 import pl.eurokawa.balance.strategy.CheckoutBalanceStrategy;
@@ -21,6 +22,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BalanceServiceImplTest {
+
+    @Mock
+    BalanceRepository repository;
 
     @Test
     void updateBalance_ByDeposit(){
@@ -50,11 +54,9 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalance_ByCheckout(){
         User user = mock(User.class);
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-
         List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, strategies);
 
         BalanceServiceImpl spy = spy(service);
 
@@ -65,7 +67,7 @@ public class BalanceServiceImplTest {
         spy.updateBalance(user,checkoutValue,TransactionType.CHECKOUT);
 
         ArgumentCaptor<Balance> captor = ArgumentCaptor.forClass(Balance.class);
-        verify(balanceRepository).save(captor.capture());
+        verify(repository).save(captor.capture());
         Balance newBalance = captor.getValue();
 
         assertEquals(new BigDecimal("10.00"),newBalance.getAmount());
@@ -75,11 +77,9 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalance_ByManual(){
         User user = mock(User.class);
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-
         List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, strategies);
 
         BalanceServiceImpl spy = spy(service);
 
@@ -90,7 +90,7 @@ public class BalanceServiceImplTest {
         spy.updateBalance(user,manualValue,TransactionType.MANUAL);
 
         ArgumentCaptor<Balance> captor = ArgumentCaptor.forClass(Balance.class);
-        verify(balanceRepository).save(captor.capture());
+        verify(repository).save(captor.capture());
         Balance newBalance = captor.getValue();
 
        assertEquals(new BigDecimal("500.00"),newBalance.getAmount());
@@ -100,11 +100,9 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalance_NegativeValueInDeposit(){
         User user = mock(User.class);
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-
         List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, strategies);
 
         BalanceServiceImpl spy = spy(service);
         BigDecimal minusValue = new BigDecimal("-10.00");
@@ -118,11 +116,9 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalance_NegativeValueInCheckout(){
         User user = mock(User.class);
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-
         List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, strategies);
 
         BalanceServiceImpl spy = spy(service);
         BigDecimal minusValue = new BigDecimal("-10.00");
@@ -136,11 +132,9 @@ public class BalanceServiceImplTest {
     @Test
     void updateBalance_UserIsNull(){
         User user = null;
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-
         List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, strategies);
 
         BalanceServiceImpl spy = spy(service);
 
@@ -155,11 +149,9 @@ public class BalanceServiceImplTest {
         User user = new User();
         BigDecimal value = null;
 
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-
         List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, strategies);
 
         BalanceServiceImpl spy = spy(service);
 
@@ -175,11 +167,9 @@ public class BalanceServiceImplTest {
         BigDecimal value = new BigDecimal("1.00");
         TransactionType transactionType = null;
 
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-
         List<BalanceStrategy> strategies = List.of(new DepositBalanceStrategy(),new ManualBalanceStrategy(),new CheckoutBalanceStrategy());
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, strategies);
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, strategies);
 
         BalanceServiceImpl spy = spy(service);
 
@@ -192,21 +182,18 @@ public class BalanceServiceImplTest {
     @Test
     void getCurrentBalance_WorkingTest(){
         BigDecimal currentBalance = new BigDecimal("100.00");
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
-        when(balanceRepository.findLastBalance()).thenReturn(new Balance(new User(), currentBalance));
+        when(repository.findLastBalance()).thenReturn(new Balance(new User(), currentBalance));
 
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, Collections.emptyList());
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, Collections.emptyList());
 
         assertEquals(currentBalance,service.getCurrentBalance());
     }
 
     @Test
     void getCurrentBalance_LastBalanceIsNull(){
-        BalanceRepository balanceRepository = mock(BalanceRepository.class);
+        when(repository.findLastBalance()).thenReturn(null);
 
-        when(balanceRepository.findLastBalance()).thenReturn(null);
-
-        BalanceServiceImpl service = new BalanceServiceImpl(balanceRepository, Collections.emptyList());
+        BalanceServiceImpl service = new BalanceServiceImpl(repository, Collections.emptyList());
 
         BigDecimal expectedValue = new BigDecimal("0.00");
 
@@ -218,7 +205,6 @@ public class BalanceServiceImplTest {
         User user = mock(User.class);
         when(user.getId()).thenReturn(123);
 
-        BalanceRepository repository = mock(BalanceRepository.class);
         Balance balance = new Balance(user,new BigDecimal("111.00"));
 
         when(repository.findUserLastBalanceOperation(user.getId())).thenReturn(balance);
@@ -230,7 +216,6 @@ public class BalanceServiceImplTest {
 
     @Test
     void findUserLastBalanceOperation_UserIdIsNull(){
-        BalanceRepository repository = mock(BalanceRepository.class);
        BalanceServiceImpl service = new BalanceServiceImpl(repository,Collections.emptyList());
 
         NullPointerException exception = assertThrows(NullPointerException.class, () -> service.findUserLastBalanceOperation(null));
@@ -240,7 +225,6 @@ public class BalanceServiceImplTest {
 
     @Test
     void findUserLastBalanceOperation_UserNotFound(){
-        BalanceRepository repository = mock(BalanceRepository.class);
         BalanceServiceImpl service = new BalanceServiceImpl(repository,Collections.emptyList());
 
         when(repository.findUserLastBalanceOperation(1)).thenReturn(null);
