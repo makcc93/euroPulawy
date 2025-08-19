@@ -1,11 +1,13 @@
 package pl.eurokawa.email;
 
 
+import com.vaadin.flow.router.NotFoundException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pl.eurokawa.exception.ArgumentNullChecker;
 import pl.eurokawa.token.TokenService;
 import pl.eurokawa.token.TokenType;
 import pl.eurokawa.user.User;
@@ -25,18 +27,25 @@ public class EmailConfirmationController {
 
     @GetMapping("/users/{id}/emailConfirmation/{token}")
     public ResponseEntity<String> confirmUserEmail(@PathVariable Integer id,@PathVariable String token){
-        User user = userService.getById(id);
-        String userLastRegistrationToken = tokenService.getLastUserTokenByType(user.getId(), TokenType.REGISTRATION).getValue();
+        ArgumentNullChecker.check(id,token);
 
-        if (userLastRegistrationToken.equals(token)) {
-            user.setEmailConfirmed(true);
-            userService.save(user);
+        try {
+            User user = userService.getById(id);
+            String userLastRegistrationToken = tokenService.getLastUserTokenByType(user.getId(), TokenType.REGISTRATION).getValue();
 
-            log.info("mail potwierdzony dla {}, a uzyty token = {}", user.getEmail(), token);
-            return ResponseEntity.ok("Twój email został poprawnie potwierdzony!");
+            if (userLastRegistrationToken.equals(token)) {
+                user.setEmailConfirmed(true);
+                userService.save(user);
+
+                log.info("mail potwierdzony dla {}, a uzyty token = {}", user.getEmail(), token);
+                return ResponseEntity.ok("Twój email został poprawnie potwierdzony!");
+            }
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Niepoprawny lub przedawniony token!");
         }
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Niepoprawny lub przedawniony token!");
+        catch (NotFoundException exception){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Użytkownik nie znaleziony");
+        }
     }
 
     @GetMapping("/users/admin-account-confirmation/{userId}/{token}")

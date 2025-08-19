@@ -2,6 +2,7 @@ package pl.eurokawa.email.strategy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.email.EmailType;
 
@@ -10,11 +11,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class NewUserRegisterEmailGeneratorTest {
 
+    @InjectMocks
+    NewUserRegisterEmailGenerator newUserRegisterEmailGenerator;
+
     @Test
     void supports_workingTest(){
         EmailType emailType = EmailType.NEW_USER_REGISTER;
 
-        NewUserRegisterEmailGenerator newUserRegisterEmailGenerator = new NewUserRegisterEmailGenerator();
         boolean doSupport = newUserRegisterEmailGenerator.supports(emailType);
         assertTrue(doSupport);
     }
@@ -22,7 +25,6 @@ class NewUserRegisterEmailGeneratorTest {
     @Test
     void supports_EmailConfirmationShouldNotPassed(){
         EmailType emailType = EmailType.EMAIL_CONFIRMATION;
-        NewUserRegisterEmailGenerator newUserRegisterEmailGenerator = new NewUserRegisterEmailGenerator();
         boolean doSupport = newUserRegisterEmailGenerator.supports(emailType);
 
         assertFalse(doSupport);
@@ -31,7 +33,6 @@ class NewUserRegisterEmailGeneratorTest {
     @Test
     void supports_EmailTypeIsNull(){
         EmailType emailType = null;
-        NewUserRegisterEmailGenerator newUserRegisterEmailGenerator = new NewUserRegisterEmailGenerator();
         NullPointerException exception = assertThrows(NullPointerException.class, () -> newUserRegisterEmailGenerator.supports(emailType));
 
         assertEquals("Email type cannot be null", exception.getMessage());
@@ -39,7 +40,6 @@ class NewUserRegisterEmailGeneratorTest {
 
     @Test
     void generateEmailSubject_WorkingTest(){
-        NewUserRegisterEmailGenerator newUserRegisterEmailGenerator = new NewUserRegisterEmailGenerator();
         assertEquals("[ADMIN_ONLY] Zarejestrował się nowy użytkownik",newUserRegisterEmailGenerator.generateEmailSubject());
     }
 
@@ -47,7 +47,6 @@ class NewUserRegisterEmailGeneratorTest {
     void generateEmailBody_WorkingTest(){
         String url = "google.com";
 
-        NewUserRegisterEmailGenerator newUserRegisterEmailGenerator = new NewUserRegisterEmailGenerator();
         String expectedBodyValue = newUserRegisterEmailGenerator.generateEmailBody(url);
 
         assertEquals("Właśnie zarejestrował się nowy użytkownik.\n\n" +
@@ -61,8 +60,6 @@ class NewUserRegisterEmailGeneratorTest {
     @Test
     void generateEmailBody_UrlIsNull(){
         String url = null;
-
-        NewUserRegisterEmailGenerator newUserRegisterEmailGenerator = new NewUserRegisterEmailGenerator();
 
         NullPointerException exception = assertThrows(NullPointerException.class, () -> newUserRegisterEmailGenerator.generateEmailBody(url));
 

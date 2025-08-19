@@ -1,14 +1,14 @@
 package pl.eurokawa.product;
 
-import org.springframework.stereotype.Service;
+import pl.eurokawa.product.DTO.ProductNameDTO;
 
 import java.util.List;
 
 public interface ProductService {
     List<Product> getAllProducts();
-    Product create(String name);
-    Product save(Product product);
-    void delete(Product product);
+    ProductNameDTO create(String productName);
+    ProductNameDTO save(Product product);
+    void delete(Integer id);
     Product findById(Integer id);
 
 }

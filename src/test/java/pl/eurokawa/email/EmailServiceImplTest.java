@@ -35,8 +35,6 @@ class EmailServiceImplTest {
     @Mock
     JavaMailSender javaMailSender;
 
-
-
     @Test
     void sendSixNumbersCode_SendingTest() {
         User user = new User();

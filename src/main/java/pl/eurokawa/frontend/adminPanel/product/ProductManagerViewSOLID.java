@@ -113,7 +113,7 @@ public class ProductManagerViewSOLID extends Div {
 
         layoutForDialog.getSaveButton().addClickListener(saveClick ->{
             if (layoutForDialog.getTextField().getValue().equals(token.getValue())){
-                productService.delete(product);
+                productService.delete(product.getId());
 
                 Notification.show("Produkt poprawnie usunięty",5000, Notification.Position.MIDDLE);
                 dialog.close();

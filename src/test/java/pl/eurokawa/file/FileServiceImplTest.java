@@ -153,14 +153,4 @@ class FileServiceImplTest {
         assertThrows(NullPointerException.class,() -> service.getFile(fileType,fileName));
         verify(s3Service,never()).downloadFileFromS3(fileType,fileName);
     }
-
 }
-/*
-   public byte[] getFile(FileType fileType, String fileKey) {
-        ArgumentNullChecker.check(fileType,"File type");
-        ArgumentNullChecker.check(fileKey,"File key");
-
-        return Optional.ofNullable(s3Service.downloadFileFromS3(fileType,fileKey))
-                .orElseThrow(() -> new NotFoundException("Cannot find this file!"));
-    }
- */

@@ -31,7 +31,7 @@ class NameConversionServiceImplTest {
     }
 
     @Test
-    void generateSecureFileName_UUIDtest(){
+    void generateSecureFileName_UUIDbeforeFileName(){
         String fileName = "a.txt";
         String secureFileName = service.generateSecureFileName(fileName);
 

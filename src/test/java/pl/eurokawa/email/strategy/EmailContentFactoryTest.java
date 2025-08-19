@@ -2,6 +2,8 @@ package pl.eurokawa.email.strategy;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.eurokawa.email.EmailType;
 
@@ -13,6 +15,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class EmailContentFactoryTest {
 
+    @Mock
+    EmailGeneratorStrategy mockStrategy;
+
     List<EmailGeneratorStrategy> strategies = List.of(
             new SixDigitCodeEmailGenerator(),
             new NewUserRegisterEmailGenerator(),
@@ -23,7 +28,6 @@ class EmailContentFactoryTest {
     void generateSubjectValue_SixDigitCodeTest(){
         EmailType emailType = EmailType.SIX_DIGIT_CODE;
 
-        EmailGeneratorStrategy mockStrategy = mock(EmailGeneratorStrategy.class);
         when(mockStrategy.supports(emailType)).thenReturn(true);
         when(mockStrategy.generateEmailSubject()).thenReturn("example subject");
 
@@ -37,7 +41,6 @@ class EmailContentFactoryTest {
     void generateSubjectValue_NewUserRegisterTest(){
         EmailType emailType = EmailType.NEW_USER_REGISTER;
 
-        EmailGeneratorStrategy mockStrategy = mock(EmailGeneratorStrategy.class);
         when(mockStrategy.supports(emailType)).thenReturn(true);
         when(mockStrategy.generateEmailSubject()).thenReturn("subject");
 
@@ -52,7 +55,6 @@ class EmailContentFactoryTest {
     void generateSubjectValue_AccountConfirmationTest(){
         EmailType emailType = EmailType.EMAIL_CONFIRMATION;
 
-        EmailGeneratorStrategy mockStrategy = mock(EmailGeneratorStrategy.class);
         when(mockStrategy.supports(emailType)).thenReturn(true);
         when(mockStrategy.generateEmailSubject()).thenReturn("test");
 
@@ -77,7 +79,6 @@ class EmailContentFactoryTest {
         EmailType emailType = EmailType.SIX_DIGIT_CODE;
         String token = "111222";
 
-        EmailGeneratorStrategy mockStrategy = mock(EmailGeneratorStrategy.class);
         when(mockStrategy.supports(emailType)).thenReturn(true);
 
         EmailContentFactory emailContentFactory = new EmailContentFactory(List.of(mockStrategy));
@@ -91,7 +92,6 @@ class EmailContentFactoryTest {
         EmailType emailType = EmailType.NEW_USER_REGISTER;
         String token = "google.com";
 
-        EmailGeneratorStrategy mockStrategy = mock(EmailGeneratorStrategy.class);
         when(mockStrategy.supports(emailType)).thenReturn(true);
 
         EmailContentFactory emailContentFactory = new EmailContentFactory(List.of(mockStrategy));
@@ -104,7 +104,6 @@ class EmailContentFactoryTest {
     void generateBodyValue_AccountConfirmationTest(){
         EmailType emailType = EmailType.EMAIL_CONFIRMATION;
         String token = "google.com";
-        EmailGeneratorStrategy mockStrategy = mock(EmailGeneratorStrategy.class);
         when(mockStrategy.supports(emailType)).thenReturn(true);
 
         EmailContentFactory emailContentFactory = new EmailContentFactory(List.of(mockStrategy));
