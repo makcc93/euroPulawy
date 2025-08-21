@@ -27,12 +27,7 @@ public class ProductServiceImpl implements ProductService{
     public ProductNameDTO create(String productName) {
         ArgumentNullChecker.check(productName,"Product name");
 
-        Product product = new Product();
-        product.setName(productName);
-
-        Product savedProduct = productRepository.save(product);
-
-        return ProductNameDTO.from(savedProduct);
+        return save(new Product(productName));
     }
 
     @Override
